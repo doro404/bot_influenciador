@@ -52,7 +52,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-
 logger = logging.getLogger(__name__)
 
 # Configuração da pasta de uploads
@@ -127,7 +126,7 @@ async def validate_video_note_requirements(file_data, file_path=None):
     Valida se o video note atende aos requisitos obrigatórios do Telegram:
     - Formato Quadrado (1:1 aspect ratio)
     - Duração Máxima: 60 segundos
-    - Tamanho Máximo: 1MB para bots
+    - Tamanho Máximo: 100MB para bots
     - Codec: H.264/MPEG-4
     - Resolução recomendada: 512x512 px
     """
@@ -144,8 +143,8 @@ async def validate_video_note_requirements(file_data, file_path=None):
         
         print(f"🔍 DEBUG: Tamanho do arquivo: {file_size_mb:.2f} MB")
         
-        if file_size_mb > 1:
-            return False, f"❌ Tamanho do arquivo ({file_size_mb:.2f} MB) excede o limite de 1MB para bots"
+        if file_size_mb > 100:
+            return False, f"❌ Tamanho do arquivo ({file_size_mb:.2f} MB) excede o limite de 100MB para bots"
         
         # Criar arquivo temporário para análise
         with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as temp_file:
@@ -215,8 +214,8 @@ async def validate_video_note_requirements(file_data, file_path=None):
         file_size = len(file_data) if file_data else os.path.getsize(file_path)
         file_size_mb = file_size / (1024 * 1024)
         
-        if file_size_mb > 1:
-            return False, f"❌ Tamanho do arquivo ({file_size_mb:.2f} MB) excede o limite de 1MB para bots"
+        if file_size_mb > 100:
+            return False, f"❌ Tamanho do arquivo ({file_size_mb:.2f} MB) excede o limite de 100MB para bots"
         
         return True, "✅ Validação básica passou (bibliotecas não disponíveis)"
         
@@ -231,7 +230,7 @@ async def convert_video_to_video_note(file_data, file_path=None):
     - Redimensiona para 512x512 (quadrado)
     - Limita duração para 60 segundos
     - Converte para H.264/MPEG-4
-    - Comprime para menos de 1MB
+    - Comprime para menos de 100MB
     """
     try:
         import cv2
@@ -272,7 +271,7 @@ async def convert_video_to_video_note(file_data, file_path=None):
                 temp_output_path,
                 codec='libx264',
                 audio_codec='aac',
-                bitrate='400k',  # Bitrate ainda mais baixo para garantir < 1MB
+                bitrate='400k',  # Bitrate ainda mais baixo para garantir < 100MB
                 fps=20,  # FPS reduzido para economizar espaço
                 preset='ultrafast',  # Preset rápido
                 threads=2,
@@ -288,7 +287,7 @@ async def convert_video_to_video_note(file_data, file_path=None):
             print(f"🔧 DEBUG: Arquivo convertido: {converted_size_mb:.2f} MB")
             
             # Se ainda estiver muito grande, comprimir mais
-            if converted_size_mb > 1:
+            if converted_size_mb > 100:
                 print(f"🔧 DEBUG: Comprimindo mais para reduzir tamanho...")
                 
                 # Ler o arquivo convertido
@@ -314,7 +313,7 @@ async def convert_video_to_video_note(file_data, file_path=None):
                 final_size_mb = final_size / (1024 * 1024)
                 print(f"🔧 DEBUG: Tamanho final após compressão: {final_size_mb:.2f} MB")
                 
-                if final_size_mb > 1:
+                if final_size_mb > 100:
                     print(f"🔧 DEBUG: Ainda muito grande, tentando sem áudio...")
                     # Tentar sem áudio
                     video_clip = VideoFileClip(temp_output_path)
@@ -1033,7 +1032,7 @@ async def handle_media_input(update: Update, context: ContextTypes.DEFAULT_TYPE)
                                     "📋 **Requisitos obrigatórios:**\n"
                                     "• Formato quadrado (1:1)\n"
                                     "• Duração máxima: 60 segundos\n"
-                                    "• Tamanho máximo: 1MB\n"
+                                    "• Tamanho máximo: 100MB\n"
                                     "• Codec: H.264/MPEG-4\n"
                                     "• Resolução recomendada: 512x512px\n\n"
                                     "🔄 **Deseja converter automaticamente?**",
@@ -1279,7 +1278,7 @@ async def handle_media_input(update: Update, context: ContextTypes.DEFAULT_TYPE)
                                     "📋 **Requisitos obrigatórios:**\n"
                                     "• Formato quadrado (1:1)\n"
                                     "• Duração máxima: 60 segundos\n"
-                                    "• Tamanho máximo: 1MB\n"
+                                    "• Tamanho máximo: 100MB\n"
                                     "• Codec: H.264/MPEG-4\n"
                                     "• Resolução recomendada: 512x512px",
                                     reply_markup=InlineKeyboardMarkup([[
@@ -1900,7 +1899,7 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data['flow_data']['name'] = text
             
             await update.message.reply_text(
-                f"✅ **Flow '{text}' created!**\n\n📋 **Message 1**\n\nChoose the message type:",
+                f"✅ **Fluxo '{text}' criado!**\n\n📋 **Mensagem 1**\n\nEscolha o tipo de mensagem:",
                 reply_markup=create_message_step_keyboard(1)
             )
         else:
@@ -2191,16 +2190,16 @@ async def save_current_step_and_continue(update, context, flow_manager):
 
 # Handlers para sistema de fluxo e admin
 async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """/admin command - Admin menu"""
+    """Comando /admin - Menu de administração"""
     user = update.effective_user
     flow_manager = FlowManager()
     
     if not flow_manager.is_admin(user.id):
-        await update.message.reply_text("❌ You do not have admin permission.")
+        await update.message.reply_text("❌ Você não tem permissão de administrador.")
         return
     
     await update.message.reply_text(
-        "🔧 **Admin Panel**\n\nChoose an option:",
+        "🔧 **Painel de Administração**\n\nEscolha uma opção:",
         reply_markup=create_admin_keyboard()
     )
 
@@ -2247,20 +2246,20 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     if query.data == "admin_menu":
         if flow_manager.is_admin(user.id):
             await safe_edit_message(
-                "🔧 **Admin Panel**\n\nChoose an option:",
+                "🔧 **Painel de Administração**\n\nEscolha uma opção:",
                 reply_markup=create_admin_keyboard()
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "admin_flows":
         if flow_manager.is_admin(user.id):
             await safe_edit_message(
-                "📝 **Flow Management**\n\nChoose an option:",
+                "📝 **Gerenciamento de Fluxos**\n\nEscolha uma opção:",
                 reply_markup=create_flow_management_keyboard()
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "create_flow":
         if flow_manager.is_admin(user.id):
@@ -2268,101 +2267,109 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             context.user_data['flow_data'] = {}
             context.user_data['current_step_number'] = 1
             await safe_edit_message(
-                "📝 **Create New Flow**\n\nEnter the flow name:",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Cancel", callback_data="admin_flows")]])
+                "📝 **Criar Novo Fluxo**\n\nDigite o nome do fluxo:",
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="admin_flows")
+                ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "add_message_text":
         if flow_manager.is_admin(user.id):
             context.user_data['current_step_type'] = 'message_text'
             await safe_edit_message(
-                "📝 **Message + Text**\n\nEnter the message text:",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Cancel", callback_data="admin_flows")]])
+                "📝 **Mensagem + Texto**\n\nDigite o texto da mensagem:",
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="admin_flows")
+                ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "add_message_image":
         if flow_manager.is_admin(user.id):
             context.user_data['current_step_type'] = 'message_image'
             await safe_edit_message(
-                "🖼️ **Message + Image**\n\n📤 **Send the image directly** or enter the URL:",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Cancel", callback_data="admin_flows")]])
+                "🖼️ **Mensagem + Imagem**\n\n📤 **Envie a imagem diretamente** ou digite a URL:",
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="admin_flows")
+                ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "add_message_video":
         if flow_manager.is_admin(user.id):
             context.user_data['current_step_type'] = 'message_video'
             await safe_edit_message(
-                "🎥 **Message + Video**\n\n📤 **Send the video directly** or enter the URL:",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Cancel", callback_data="admin_flows")]])
+                "🎥 **Mensagem + Vídeo**\n\n📤 **Envie o vídeo diretamente** ou digite a URL:",
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="admin_flows")
+                ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "add_message_image_button":
         if flow_manager.is_admin(user.id):
             context.user_data['current_step_type'] = 'message_image_button'
             await safe_edit_message(
-                "🖼️ **Message + Image + Button**\n\n📤 **Send the image directly** or enter the URL:",
+                "🖼️ **Mensagem + Imagem + Botão**\n\n📤 **Envie a imagem diretamente** ou digite a URL:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="admin_flows")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="admin_flows")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "add_message_text_button":
         if flow_manager.is_admin(user.id):
             context.user_data['current_step_type'] = 'message_text_button'
             await safe_edit_message(
-                "🔘 **Message + Text + Button**\n\n📝 **Enter the message text:**",
+                "🔘 **Mensagem + Texto + Botão**\n\n📝 **Digite o texto da mensagem:**",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="admin_flows")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="admin_flows")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "add_message_video_button":
         if flow_manager.is_admin(user.id):
             context.user_data['current_step_type'] = 'message_video_button'
             await safe_edit_message(
-                "🎥 **Message + Video + Button**\n\n📤 **Send the video directly** or enter the URL:",
+                "🎥 **Mensagem + Vídeo + Botão**\n\n📤 **Envie o vídeo diretamente** ou digite a URL:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="admin_flows")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="admin_flows")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "add_message_video_note":
         if flow_manager.is_admin(user.id):
             context.user_data['current_step_type'] = 'message_video_note'
             await safe_edit_message(
-                "🎬 **Message + Round Video**\n\n📤 **Send the round video directly** or enter the URL:",
+                "🎬 **Mensagem + Vídeo Redondo**\n\n📤 **Envie o vídeo redondo diretamente** ou digite a URL:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="admin_flows")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="admin_flows")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "add_message_video_note_button":
         if flow_manager.is_admin(user.id):
             context.user_data['current_step_type'] = 'message_video_note_button'
             await safe_edit_message(
-                "🎬 **Message + Round Video + Text**\n\n📤 **Send the round video directly** or enter the URL:",
+                "🎬 **Mensagem + Vídeo Redondo + Texto**\n\n📤 **Envie o vídeo redondo diretamente** ou digite a URL:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="admin_flows")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="admin_flows")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "convert_video_note":
         if flow_manager.is_admin(user.id):
@@ -2371,9 +2378,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 step_type = context.user_data['video_to_convert']['step_type']
                 
                 await safe_edit_message(
-                    "🔄 **Converting video...**\n\nPlease wait while we convert the video to the correct format.\nThis may take a few seconds...",
+                    "🔄 **Convertendo vídeo...**\n\n"
+                    "Aguarde enquanto convertemos o vídeo para o formato correto.\n"
+                    "Isso pode levar alguns segundos...",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("⏳ Processing...", callback_data="processing")
+                        InlineKeyboardButton("⏳ Processando...", callback_data="processing")
                     ]])
                 )
                 
@@ -2401,9 +2410,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     context.user_data.pop('video_to_convert', None)
                     
                     await safe_edit_message(
-                        f"✅ **Conversion Complete!**\n\n{message}\n\n📝 **Enter the round video text:**",
+                        f"✅ **Conversão Concluída!**\n\n{message}\n\n"
+                        "📝 **Digite o texto do vídeo redondo:**",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Cancel", callback_data="admin_flows")
+                            InlineKeyboardButton("🔙 Cancelar", callback_data="admin_flows")
                         ]])
                     )
                     
@@ -2412,20 +2422,21 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                         context.user_data['waiting_for_button'] = True
                 else:
                     await safe_edit_message(
-                        f"❌ **Conversion Error**\n\n{message}\n\nTry sending a different video or check the requirements.",
+                        f"❌ **Erro na Conversão**\n\n{message}\n\n"
+                        "Tente enviar um vídeo diferente ou verifique os requisitos.",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                            InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                         ]])
                     )
             else:
                 await safe_edit_message(
-                    "❌ **Error**\n\nVideo data not found. Please try again.",
+                    "❌ **Erro**\n\nDados do vídeo não encontrados. Tente novamente.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "convert_welcome_video_note":
         if flow_manager.is_admin(user.id):
@@ -2433,9 +2444,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 video_data = context.user_data['temp_welcome_video_data']['file_data']
                 
                 await safe_edit_message(
-                    "🔄 **Converting welcome video...**\n\nPlease wait while we convert the video to round format.\nThis may take a few seconds...",
+                    "🔄 **Convertendo vídeo para boas-vindas...**\n\n"
+                    "Aguarde enquanto convertemos o vídeo para o formato redondo.\n"
+                    "Isso pode levar alguns segundos...",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("⏳ Processing...", callback_data="processing")
+                        InlineKeyboardButton("⏳ Processando...", callback_data="processing")
                     ]])
                 )
                 
@@ -2463,26 +2476,29 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                         context.user_data.pop('temp_welcome_video_data', None)
                         
                         await safe_edit_message(
-                            f"✅ **Welcome Round Video Set!**\n\nThe video was successfully converted to round format.\nFile: {temp_path}",
+                            f"✅ **Vídeo Redondo da Mensagem de Boas-vindas Configurado!**\n\n"
+                            f"O vídeo foi convertido com sucesso para formato redondo.\n"
+                            f"Arquivo: {temp_path}",
                             reply_markup=create_config_welcome_keyboard()
                         )
                     else:
                         await safe_edit_message(
-                            "❌ **Error saving round video.**\n\nPlease try again.",
+                            "❌ **Erro ao salvar vídeo redondo.**\n\nTente novamente.",
                             reply_markup=create_config_welcome_keyboard()
                         )
                 else:
                     await safe_edit_message(
-                        f"❌ **Conversion Error**\n\n{message}\n\nTry sending a different video or check the requirements.",
+                        f"❌ **Erro na Conversão**\n\n{message}\n\n"
+                        "Tente enviar um vídeo diferente ou verifique os requisitos.",
                         reply_markup=create_config_welcome_keyboard()
                     )
             else:
                 await safe_edit_message(
-                    "❌ **Error**\n\nVideo data not found. Please try again.",
+                    "❌ **Erro**\n\nDados do vídeo não encontrados. Tente novamente.",
                     reply_markup=create_config_welcome_keyboard()
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "finish_step":
         if flow_manager.is_admin(user.id):
@@ -2502,43 +2518,43 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     context.user_data.pop('current_button_type', None)
                     
                     await safe_edit_message(
-                        "✅ **Step Saved!**\n\nStep successfully added to the flow.",
+                        "✅ **Etapa Salva!**\n\nEtapa adicionada com sucesso ao fluxo.",
                         reply_markup=create_flow_control_keyboard()
                     )
                 else:
                     await safe_edit_message(
-                        "❌ Error saving step. Please try again.",
+                        "❌ Erro ao salvar etapa. Tente novamente.",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                            InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                         ]])
                     )
             else:
                 await safe_edit_message(
-                    "❌ Step data not found.",
+                    "❌ Dados da etapa não encontrados.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "edit_flow":
         if flow_manager.is_admin(user.id):
             flows = flow_manager.get_active_flows()
             if flows:
                 await safe_edit_message(
-                    "✏️ **Edit Flow**\n\nChoose the flow you want to edit:",
+                    "✏️ **Editar Fluxo**\n\nEscolha o fluxo que deseja editar:",
                     reply_markup=create_edit_flow_keyboard(flows)
                 )
             else:
                 await safe_edit_message(
-                    "📝 No flow found to edit.",
+                    "📝 Nenhum fluxo encontrado para editar.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data.startswith("edit_flow_") and query.data != "edit_flow_list":
         if flow_manager.is_admin(user.id):
@@ -2546,7 +2562,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             
             # Obter informações do fluxo
             flows = flow_manager.get_active_flows()
-            flow_name = "Unknown Flow"
+            flow_name = "Fluxo Desconhecido"
             for flow in flows:
                 if flow['id'] == flow_id:
                     flow_name = flow['name']
@@ -2556,11 +2572,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             context.user_data['editing_flow_id'] = flow_id
             
             await safe_edit_message(
-                f"✏️ **Edit Flow: {flow_name}**\n\nChoose the step you want to edit:",
+                f"✏️ **Editar Fluxo: {flow_name}**\n\nEscolha a etapa que deseja editar:",
                 reply_markup=create_edit_step_keyboard(flow_id)
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data.startswith("edit_step_") and not query.data.startswith("edit_step_text_") and not query.data.startswith("edit_step_media_"):
         print(f"🔍 DEBUG: Entrando no handler edit_step_ genérico - Callback: {query.data}")
@@ -2577,25 +2593,25 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 context.user_data['editing_step_media_url'] = step.get('media_url', '')
                 
                 # Criar mensagem de detalhes da etapa
-                message = f"📝 **Edit Step**\n\n"
-                message += f"**Flow:** {step['flow_name']}\n"
-                message += f"**Type:** {step['step_type'].replace('_', ' ').title()}\n"
-                message += f"**Content:** {step['content'][:100]}{'...' if len(step['content']) > 100 else ''}\n"
+                message = f"📝 **Editar Etapa**\n\n"
+                message += f"**Fluxo:** {step['flow_name']}\n"
+                message += f"**Tipo:** {step['step_type'].replace('_', ' ').title()}\n"
+                message += f"**Conteúdo:** {step['content'][:100]}{'...' if len(step['content']) > 100 else ''}\n"
                 
                 if step.get('media_url'):
-                    message += f"**Media:** {step['media_url'][:50]}...\n"
+                    message += f"**Mídia:** {step['media_url'][:50]}...\n"
                 
                 if step.get('buttons'):
-                    message += f"**Buttons:** {len(step['buttons'])} button(s)\n"
+                    message += f"**Botões:** {len(step['buttons'])} botão(ões)\n"
                 
-                message += "\nChoose what you want to edit:"
+                message += "\nEscolha o que deseja editar:"
                 
                 # Criar teclado de opções de edição
                 keyboard = [
-                    [InlineKeyboardButton("📝 Edit Text", callback_data=f"edit_step_text_{step_id}")],
-                    [InlineKeyboardButton("🖼️ Edit Media", callback_data=f"edit_step_media_{step_id}")],
-                    [InlineKeyboardButton("🗑️ Delete Step", callback_data=f"delete_step_{step_id}")],
-                    [InlineKeyboardButton("🔙 Back", callback_data=f"edit_flow_{step['flow_id']}")]
+                    [InlineKeyboardButton("📝 Editar Texto", callback_data=f"edit_step_text_{step_id}")],
+                    [InlineKeyboardButton("🖼️ Editar Mídia", callback_data=f"edit_step_media_{step_id}")],
+                    [InlineKeyboardButton("🗑️ Deletar Etapa", callback_data=f"delete_step_{step_id}")],
+                    [InlineKeyboardButton("🔙 Voltar", callback_data=f"edit_flow_{step['flow_id']}")]
                 ]
                 
                 await safe_edit_message(
@@ -2604,13 +2620,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 )
             else:
                 await safe_edit_message(
-                    "❌ Step not found.",
+                    "❌ Etapa não encontrada.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="edit_flow_list")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="edit_flow_list")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data.startswith("edit_step_text_"):
         print(f"🔍 DEBUG: Entrando no handler edit_step_text_ - Callback: {query.data}")
@@ -2623,14 +2639,14 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             
             print("🔍 DEBUG: Tentando editar mensagem para edição de texto...")
             await safe_edit_message(
-                "📝 **Edit Step Text**\n\nEnter the new text:",
+                "📝 **Editar Texto da Etapa**\n\nDigite o novo texto:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data=f"edit_step_{step_id}")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data=f"edit_step_{step_id}")
                 ]])
             )
             print("🔍 DEBUG: Mensagem editada com sucesso para edição de texto")
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data.startswith("edit_step_media_"):
         print(f"🔍 DEBUG: Entrando no handler edit_step_media_ - Callback: {query.data}")
@@ -2643,14 +2659,14 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             
             print("🔍 DEBUG: Tentando editar mensagem para edição de mídia...")
             await safe_edit_message(
-                "🖼️ **Edit Step Media**\n\nSend the new image/video or enter the URL:",
+                "🖼️ **Editar Mídia da Etapa**\n\nEnvie a nova imagem/vídeo ou digite a URL:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data=f"edit_step_{step_id}")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data=f"edit_step_{step_id}")
                 ]])
             )
             print("🔍 DEBUG: Mensagem editada com sucesso para edição de mídia")
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data.startswith("delete_step_"):
         if flow_manager.is_admin(user.id):
@@ -2661,27 +2677,27 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             if step:
                 if delete_step_completely(step_id):
                     await safe_edit_message(
-                        f"🗑️ **Step Deleted!**\n\nThe step '{step['step_type'].replace('_', ' ').title()}' was successfully removed.",
+                        f"🗑️ **Etapa Deletada!**\n\nA etapa '{step['step_type'].replace('_', ' ').title()}' foi removida com sucesso.",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Back", callback_data=f"edit_flow_{step['flow_id']}")
+                            InlineKeyboardButton("🔙 Voltar", callback_data=f"edit_flow_{step['flow_id']}")
                         ]])
                     )
                 else:
                     await safe_edit_message(
-                        "❌ Error deleting step.",
+                        "❌ Erro ao deletar etapa.",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Back", callback_data=f"edit_step_{step_id}")
+                            InlineKeyboardButton("🔙 Voltar", callback_data=f"edit_step_{step_id}")
                         ]])
                     )
             else:
                 await safe_edit_message(
-                    "❌ Step not found.",
+                    "❌ Etapa não encontrada.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="edit_flow_list")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="edit_flow_list")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data.startswith("add_step_"):
         print(f"🔍 DEBUG: Entrando no handler add_step_ - Callback: {query.data}")
@@ -2697,40 +2713,40 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             print(f"🔍 DEBUG: current_flow_id definido como: {flow_id}")
             
             await safe_edit_message(
-                "📝 **Add Step**\n\nChoose the step type:",
+                "📝 **Adicionar Etapa**\n\nEscolha o tipo de etapa:",
                 reply_markup=create_message_step_keyboard(1)
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "edit_flow_list":
         if flow_manager.is_admin(user.id):
             flows = flow_manager.get_active_flows()
             if flows:
                 await safe_edit_message(
-                    "✏️ **Edit Flow**\n\nChoose the flow you want to edit:",
+                    "✏️ **Editar Fluxo**\n\nEscolha o fluxo que deseja editar:",
                     reply_markup=create_edit_flow_keyboard(flows)
                 )
             else:
                 await safe_edit_message(
-                    "📝 No flow found to edit.",
+                    "📝 Nenhum fluxo encontrado para editar.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "continue_flow":
         if flow_manager.is_admin(user.id):
             # Continuar adicionando etapas
             current_step = context.user_data.get('current_step_number', 1)
             await safe_edit_message(
-                f"📋 **Message {current_step}**\n\nChoose the message type:",
+                f"📋 **Mensagem {current_step}**\n\nEscolha o tipo de mensagem:",
                 reply_markup=create_message_step_keyboard(current_step)
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "confirm_step":
         if flow_manager.is_admin(user.id):
@@ -2750,25 +2766,25 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     context.user_data.pop('current_button_type', None)
                     
                     await safe_edit_message(
-                        "✅ **Step Confirmed!**\n\nStep saved successfully.",
+                        "✅ **Etapa Confirmada!**\n\nEtapa salva com sucesso.",
                         reply_markup=create_flow_control_keyboard()
                     )
                 else:
                     await safe_edit_message(
-                        "❌ Error confirming step.",
+                        "❌ Erro ao confirmar etapa.",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                            InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                         ]])
                     )
             else:
                 await safe_edit_message(
-                    "❌ Step data not found.",
+                    "❌ Dados da etapa não encontrados.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "preview_step":
         if flow_manager.is_admin(user.id):
@@ -2776,16 +2792,16 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             if 'current_step_data' in context.user_data:
                 step_data = context.user_data['current_step_data']
                 
-                preview_text = f"👁️ **Step Preview**\n\n"
-                preview_text += f"**Type:** {step_data.get('type', 'text').upper()}\n"
-                preview_text += f"**Content:** {step_data.get('content', '')[:100]}...\n"
+                preview_text = f"�� **Preview da Etapa**\n\n"
+                preview_text += f"**Tipo:** {step_data.get('type', 'text').upper()}\n"
+                preview_text += f"**Conteúdo:** {step_data.get('content', '')[:100]}...\n"
                 
                 if step_data.get('media_url'):
-                    preview_text += f"**Media:** {step_data.get('media_url')}\n"
+                    preview_text += f"**Mídia:** {step_data.get('media_url')}\n"
                 
                 buttons = step_data.get('buttons', [])
                 if buttons:
-                    preview_text += f"**Buttons:** {len(buttons)} button(s)\n"
+                    preview_text += f"**Botões:** {len(buttons)} botão(ões)\n"
                     for i, button in enumerate(buttons, 1):
                         preview_text += f"  {i}. {button.get('text', '')}\n"
                 
@@ -2795,13 +2811,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 )
             else:
                 await safe_edit_message(
-                    "❌ No step to preview.",
+                    "❌ Nenhuma etapa para preview.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="step_type_selection")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="step_type_selection")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "finish_flow":
         if flow_manager.is_admin(user.id):
@@ -2821,9 +2837,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 except Exception as e:
                     print(f"Erro ao finalizar fluxo: {e}")
                     await safe_edit_message(
-                        "❌ Error finishing flow. Please try again.",
+                        "❌ Erro ao finalizar fluxo. Tente novamente.",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                            InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                         ]])
                     )
                     return
@@ -2832,22 +2848,22 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     flow = summary['flow']
                     steps = summary['steps']
                     
-                    finish_text = f"🎉 **Flow Successfully Finished!**\n\n"
-                    finish_text += f"**Name:** {flow['name']}\n"
-                    finish_text += f"**Description:** {flow['description']}\n"
-                    finish_text += f"**Total Steps:** {summary['total_steps']}\n\n"
+                    finish_text = f"🎉 **Fluxo Finalizado com Sucesso!**\n\n"
+                    finish_text += f"**Nome:** {flow['name']}\n"
+                    finish_text += f"**Descrição:** {flow['description']}\n"
+                    finish_text += f"**Total de Etapas:** {summary['total_steps']}\n\n"
                     
                     if steps:
-                        finish_text += "**Send Order:**\n"
+                        finish_text += "**Ordem de Envio:**\n"
                         for i, step in enumerate(steps, 1):
                             finish_text += f"{i}. {step['step_type'].upper()}"
                             if step['button_count'] > 0:
-                                finish_text += f" ({step['button_count']} buttons)"
+                                finish_text += f" ({step['button_count']} botões)"
                             finish_text += "\n"
                     
-                    finish_text += "\n✅ The flow has been saved and is ready to use!"
+                    finish_text += "\n✅ O fluxo foi salvo e está pronto para uso!"
                 else:
-                    finish_text = "🎉 **Flow Finished!**\n\nThe flow was successfully saved."
+                    finish_text = "🎉 **Fluxo Finalizado!**\n\nO fluxo foi salvo com sucesso."
                 
                 # Limpar dados temporários
                 context.user_data.clear()
@@ -2855,26 +2871,26 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 await safe_edit_message(
                     finish_text,
                     reply_markup=InlineKeyboardMarkup([
-                        [InlineKeyboardButton("📋 View Flows", callback_data="list_flows")],
-                        [InlineKeyboardButton("➕ Create New Flow", callback_data="create_flow")],
-                        [InlineKeyboardButton("🔙 Back", callback_data="admin_flows")]
+                        [InlineKeyboardButton("📋 Ver Fluxos", callback_data="list_flows")],
+                        [InlineKeyboardButton("➕ Criar Novo Fluxo", callback_data="create_flow")],
+                        [InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")]
                     ])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Flow data not found.",
+                    "❌ Dados do fluxo não encontrados.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "list_flows":
         if flow_manager.is_admin(user.id):
             flows = flow_manager.get_active_flows()
             if flows:
-                flow_list = "📋 **Active Flows:**\n\n"
+                flow_list = "📋 **Fluxos Ativos:**\n\n"
                 for flow in flows:
                     flow_list += f"• **{flow['name']}** (ID: {flow['id']})\n"
                     if flow['description']:
@@ -2884,36 +2900,36 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 await safe_edit_message(
                     flow_list,
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    "📝 No flows found.\n\nCreate a new flow to get started!",
+                    "📝 Nenhum fluxo encontrado.\n\nCrie um novo fluxo para começar!",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "delete_flow":
         if flow_manager.is_admin(user.id):
             flows = flow_manager.get_active_flows()
             if flows:
                 await safe_edit_message(
-                    "🗑️ **Delete Flow**\n\nChoose the flow you want to delete:",
+                    "🗑️ **Deletar Fluxo**\n\nEscolha o fluxo que deseja deletar:",
                     reply_markup=create_delete_flow_keyboard(flows)
                 )
             else:
                 await safe_edit_message(
-                    "📝 No flows found to delete.",
+                    "📝 Nenhum fluxo encontrado para deletar.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data.startswith("delete_flow_"):
         if flow_manager.is_admin(user.id):
@@ -2921,7 +2937,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             
             # Obter informações do fluxo antes de deletar
             flows = flow_manager.get_active_flows()
-            flow_name = "Unknown Flow"
+            flow_name = "Fluxo Desconhecido"
             for flow in flows:
                 if flow['id'] == flow_id:
                     flow_name = flow['name']
@@ -2930,29 +2946,29 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             # Deletar o fluxo
             if flow_manager.delete_flow(flow_id):
                 await safe_edit_message(
-                    f"✅ **Flow Deleted!**\n\n🗑️ **{flow_name}** was successfully deleted.\n\nAll associated steps and buttons were also removed.",
+                    f"✅ **Fluxo Deletado!**\n\n🗑️ **{flow_name}** foi deletado com sucesso.\n\nTodas as etapas e botões associados também foram removidos.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    f"❌ **Error Deleting Flow**\n\nCould not delete flow **{flow_name}**.\n\nCheck if the flow exists and try again.",
+                    f"❌ **Erro ao Deletar Fluxo**\n\nNão foi possível deletar o fluxo **{flow_name}**.\n\nVerifique se o fluxo existe e tente novamente.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_flows")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "set_default_flow":
         if flow_manager.is_admin(user.id):
             flows = flow_manager.get_flows_for_default_selection()
             if flows:
                 default_flow = flow_manager.get_default_flow()
-                current_default = f"⭐ **Current Default Flow:** {default_flow['name']}" if default_flow else "❌ **No default flow defined**"
+                current_default = f"⭐ **Fluxo Padrão Atual:** {default_flow['name']}" if default_flow else "❌ **Nenhum fluxo padrão definido**"
                 
-                message = f"⭐ **Set Default Flow**\n\n{current_default}\n\nChoose a flow to set as default:"
+                message = f"⭐ **Definir Fluxo Padrão**\n\n{current_default}\n\nEscolha um fluxo para definir como padrão:"
                 
                 await safe_edit_message(
                     message,
@@ -2960,13 +2976,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 )
             else:
                 await safe_edit_message(
-                    "📝 No flows found.\n\nCreate a new flow first!",
+                    "📝 Nenhum fluxo encontrado.\n\nCrie um novo fluxo primeiro!",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_menu")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_menu")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data.startswith("set_default_"):
         if flow_manager.is_admin(user.id):
@@ -2975,57 +2991,57 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             if flow_manager.set_default_flow(flow_id):
                 # Obter nome do fluxo
                 flows = flow_manager.get_active_flows()
-                flow_name = "Unknown Flow"
+                flow_name = "Fluxo Desconhecido"
                 for flow in flows:
                     if flow['id'] == flow_id:
                         flow_name = flow['name']
                         break
                 
                 await safe_edit_message(
-                    f"✅ **Default Flow Set!**\n\n⭐ **{flow_name}** is now the default flow.\n\nThis flow will be executed when users send /start.",
+                    f"✅ **Fluxo Padrão Definido!**\n\n⭐ **{flow_name}** agora é o fluxo padrão.\n\nEste fluxo será executado quando usuários enviarem /start.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_menu")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_menu")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error setting default flow. Please try again.",
+                    "❌ Erro ao definir fluxo padrão. Tente novamente.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_menu")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_menu")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
 
     
     elif query.data == "back_to_main":
         await safe_edit_message(
-            "👋 **Influencer Bot**\n\nChoose an option:",
+            "👋 **Bot Influenciador**\n\nEscolha uma opção:",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🚀 Start", callback_data="start_flow")],
+                [InlineKeyboardButton("🚀 Iniciar", callback_data="start_flow")],
                 [InlineKeyboardButton("📋 Menu", callback_data="main_menu")],
-                [InlineKeyboardButton("❓ Help", callback_data="help_menu")]
+                [InlineKeyboardButton("❓ Ajuda", callback_data="help_menu")]
             ])
         )
     
     elif query.data == "admin_config":
         if flow_manager.is_admin(user.id):
             await safe_edit_message(
-                "⚙️ **Bot Settings**\n\nChoose a setting to manage:",
+                "⚙️ **Configurações do Bot**\n\nEscolha uma configuração para gerenciar:",
                 reply_markup=create_config_keyboard()
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "admin_stats":
         if flow_manager.is_admin(user.id):
             await safe_edit_message(
-                "📊 **Statistics and Reports**\n\nChoose the report type:",
+                "📊 **Estatísticas e Relatórios**\n\nEscolha o tipo de relatório:",
                 reply_markup=create_stats_keyboard()
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "reset_welcome_video":
         if flow_manager.is_admin(user.id):
@@ -3034,7 +3050,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             
             connection = create_connection()
             if connection is None:
-                await safe_edit_message("❌ Error connecting to database.")
+                await safe_edit_message("❌ Erro ao conectar ao banco de dados.")
                 return
             
             try:
@@ -3046,59 +3062,59 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 
                 affected_rows = cursor.rowcount
                 await safe_edit_message(
-                    f"✅ **Welcome Video Control Reset!**\n\n"
-                    f"Reset for {affected_rows} users.\n\n"
-                    f"Now all users will receive the video note again the next time they need to register.",
+                    f"✅ **Controle de Vídeo Redondo Resetado!**\n\n"
+                    f"Resetado para {affected_rows} usuários.\n\n"
+                    f"Agora todos os usuários receberão o vídeo redondo novamente na próxima vez que precisarem de cadastro.",
                     reply_markup=create_admin_keyboard()
                 )
                 
             except Error as e:
-                await safe_edit_message(f"❌ Error resetting: {e}")
+                await safe_edit_message(f"❌ Erro ao resetar: {e}")
             finally:
                 if connection.is_connected():
                     cursor.close()
                     connection.close()
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "stats_general":
         if flow_manager.is_admin(user.id):
             stats = get_general_stats()
             if stats:
-                message = "📈 **General Statistics**\n\n"
-                message += f"👥 **Users:** {stats['total_users']}\n"
-                message += f"✅ **With complete data:** {stats['users_with_data']}\n"
-                message += f"📝 **Flows:** {stats['total_flows']}\n"
-                message += f"📋 **Steps:** {stats['total_steps']}\n"
-                message += f"🔘 **Buttons:** {stats['total_buttons']}\n\n"
+                message = "📈 **Estatísticas Gerais**\n\n"
+                message += f"👥 **Usuários:** {stats['total_users']}\n"
+                message += f"✅ **Com dados completos:** {stats['users_with_data']}\n"
+                message += f"📝 **Fluxos:** {stats['total_flows']}\n"
+                message += f"📋 **Etapas:** {stats['total_steps']}\n"
+                message += f"🔘 **Botões:** {stats['total_buttons']}\n\n"
                 
                 if stats['users_by_month']:
-                    message += "📅 **Users by month (last 6 months):**\n"
+                    message += "📅 **Usuários por mês (últimos 6 meses):**\n"
                     for month, count in stats['users_by_month']:
-                        message += f"  • {month}: {count} users\n"
+                        message += f"  • {month}: {count} usuários\n"
                 
                 await safe_edit_message(
                     message,
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_stats")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_stats")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error getting statistics.",
+                    "❌ Erro ao obter estatísticas.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_stats")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_stats")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "stats_full_report":
         if flow_manager.is_admin(user.id):
             await safe_edit_message(
-                "📊 **Generating Complete Report...**\n\nPlease wait a moment...",
+                "📊 **Gerando Relatório Completo...**\n\nAguarde um momento...",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("⏳ Processing...", callback_data="processing")
+                    InlineKeyboardButton("⏳ Processando...", callback_data="processing")
                 ]])
             )
             
@@ -3106,36 +3122,36 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             if filename:
                 with open(filename, 'rb') as file:
                     await safe_edit_message(
-                        "📊 **Complete Report Generated!**\n\nThe Excel file was created successfully.",
+                        "📊 **Relatório Completo Gerado!**\n\nO arquivo Excel foi criado com sucesso.",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Back", callback_data="admin_stats")
+                            InlineKeyboardButton("🔙 Voltar", callback_data="admin_stats")
                         ]])
                     )
                     await context.bot.send_document(
                         chat_id=query.from_user.id,
                         document=file,
                         filename=filename,
-                        caption="📊 **Complete System Report**\n\nExcel file with all statistics and data."
+                        caption="📊 **Relatório Completo do Sistema**\n\nArquivo Excel com todas as estatísticas e dados."
                     )
                     # Remover arquivo após envio
                     import os
                     os.remove(filename)
             else:
                 await safe_edit_message(
-                    "❌ Error generating complete report.",
+                    "❌ Erro ao gerar relatório completo.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_stats")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_stats")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "stats_users_report":
         if flow_manager.is_admin(user.id):
             await safe_edit_message(
-                "👥 **Generating Users Report...**\n\nPlease wait a moment...",
+                "👥 **Gerando Relatório de Usuários...**\n\nAguarde um momento...",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("⏳ Processing...", callback_data="processing")
+                    InlineKeyboardButton("⏳ Processando...", callback_data="processing")
                 ]])
             )
             
@@ -3143,36 +3159,36 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             if filename:
                 with open(filename, 'rb') as file:
                     await safe_edit_message(
-                        "👥 **Users Report Generated!**\n\nThe Excel file was created successfully.",
+                        "👥 **Relatório de Usuários Gerado!**\n\nO arquivo Excel foi criado com sucesso.",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Back", callback_data="admin_stats")
+                            InlineKeyboardButton("🔙 Voltar", callback_data="admin_stats")
                         ]])
                     )
                     await context.bot.send_document(
                         chat_id=query.from_user.id,
                         document=file,
                         filename=filename,
-                        caption="👥 **Users Report**\n\nComplete list of all registered users."
+                        caption="👥 **Relatório de Usuários**\n\nLista completa de todos os usuários registrados."
                     )
                     # Remover arquivo após envio
                     import os
                     os.remove(filename)
             else:
                 await safe_edit_message(
-                    "❌ Error generating users report.",
+                    "❌ Erro ao gerar relatório de usuários.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_stats")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_stats")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "stats_flows_report":
         if flow_manager.is_admin(user.id):
             await safe_edit_message(
-                "📝 **Generating Flows Report...**\n\nPlease wait a moment...",
+                "📝 **Gerando Relatório de Fluxos...**\n\nAguarde um momento...",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("⏳ Processing...", callback_data="processing")
+                    InlineKeyboardButton("⏳ Processando...", callback_data="processing")
                 ]])
             )
             
@@ -3180,326 +3196,326 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             if filename:
                 with open(filename, 'rb') as file:
                     await safe_edit_message(
-                        "📝 **Flows Report Generated!**\n\nThe Excel file was created successfully.",
+                        "📝 **Relatório de Fluxos Gerado!**\n\nO arquivo Excel foi criado com sucesso.",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Back", callback_data="admin_stats")
+                            InlineKeyboardButton("🔙 Voltar", callback_data="admin_stats")
                         ]])
                     )
                     await context.bot.send_document(
                         chat_id=query.from_user.id,
                         document=file,
                         filename=filename,
-                        caption="📝 **Flows Report**\n\nComplete list of all flows and their steps."
+                        caption="📝 **Relatório de Fluxos**\n\nLista completa de todos os fluxos criados."
                     )
                     # Remover arquivo após envio
                     import os
                     os.remove(filename)
             else:
                 await safe_edit_message(
-                    "❌ Error generating flows report.",
+                    "❌ Erro ao gerar relatório de fluxos.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_stats")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_stats")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_phone":
         if flow_manager.is_admin(user.id):
-            status = "✅ Enabled" if is_phone_collection_enabled() else "❌ Disabled"
+            status = "✅ Ativada" if is_phone_collection_enabled() else "❌ Desativada"
             await safe_edit_message(
-                f"📱 **Phone Number Collection**\n\nCurrent status: {status}\n\nChoose an option:",
+                f"📱 **Coleta de Número**\n\nStatus atual: {status}\n\nEscolha uma opção:",
                 reply_markup=create_config_phone_keyboard()
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_phone_enable":
         if flow_manager.is_admin(user.id):
             if set_config_value('collect_phone', 'true'):
                 await safe_edit_message(
-                    "✅ **Phone Number Collection Enabled!**\n\nNow the bot will request users' phone numbers before displaying the flow.",
+                    "✅ **Coleta de Número Ativada!**\n\nAgora o bot irá solicitar o número de telefone dos usuários antes de exibir o fluxo.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error enabling phone number collection.",
+                    "❌ Erro ao ativar coleta de número.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_phone_disable":
         if flow_manager.is_admin(user.id):
             if set_config_value('collect_phone', 'false'):
                 await safe_edit_message(
-                    "❌ **Phone Number Collection Disabled!**\n\nThe bot will no longer request users' phone numbers.",
+                    "❌ **Coleta de Número Desativada!**\n\nO bot não irá mais solicitar o número de telefone dos usuários.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error disabling phone number collection.",
+                    "❌ Erro ao desativar coleta de número.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_email":
         if flow_manager.is_admin(user.id):
-            status = "✅ Enabled" if is_email_collection_enabled() else "❌ Disabled"
+            status = "✅ Ativada" if is_email_collection_enabled() else "❌ Desativada"
             await safe_edit_message(
-                f"📧 **Email Collection**\n\nCurrent status: {status}\n\nChoose an option:",
+                f"📧 **Coleta de Email**\n\nStatus atual: {status}\n\nEscolha uma opção:",
                 reply_markup=create_config_email_keyboard()
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_email_enable":
         if flow_manager.is_admin(user.id):
             if set_config_value('collect_email', 'true'):
                 await safe_edit_message(
-                    "✅ **Email Collection Enabled!**\n\nNow the bot will request users' email before displaying the flow.",
+                    "✅ **Coleta de Email Ativada!**\n\nAgora o bot irá solicitar o email dos usuários antes de exibir o fluxo.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error enabling email collection.",
+                    "❌ Erro ao ativar coleta de email.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_email_disable":
         if flow_manager.is_admin(user.id):
             if set_config_value('collect_email', 'false'):
                 await safe_edit_message(
-                    "❌ **Email Collection Disabled!**\n\nThe bot will no longer request users' email.",
+                    "❌ **Coleta de Email Desativada!**\n\nO bot não irá mais solicitar o email dos usuários.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error disabling email collection.",
+                    "❌ Erro ao desativar coleta de email.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_require_signup":
         if flow_manager.is_admin(user.id):
             status = "✅ Ativado" if is_signup_required() else "❌ Desativado"
             await safe_edit_message(
-                f"👤 **Require Registration**\n\nCurrent status: {status}\n\nChoose an option:",
+                f"👤 **Exigir Cadastro**\n\nStatus atual: {status}\n\nEscolha uma opção:",
                 reply_markup=create_config_signup_keyboard()
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_webhook":
         if flow_manager.is_admin(user.id):
             webhook_enabled = is_webhook_enabled()
             webhook_url = get_webhook_url()
             
-            status = "✅ Enabled" if webhook_enabled else "❌ Disabled"
-            url_status = f"🔗 {webhook_url}" if webhook_url else "❌ Not defined"
+            status = "✅ Ativado" if webhook_enabled else "❌ Desativado"
+            url_status = f"🔗 {webhook_url}" if webhook_url else "❌ Não definida"
             
             message = f"🔗 **Webhook CRM**\n\n"
             message += f"Status: {status}\n"
             message += f"URL: {url_status}\n\n"
-            message += "**Active events:**\n"
-            message += "• Bot access\n"
-            message += "• Registration completed\n\n"
-            message += "Choose an option:"
+            message += "**Eventos ativos:**\n"
+            message += "• Acesso ao bot\n"
+            message += "• Cadastro concluído\n\n"
+            message += "Escolha uma opção:"
             
             await safe_edit_message(
                 message,
                 reply_markup=create_webhook_keyboard()
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "webhook_enable":
         if flow_manager.is_admin(user.id):
             if set_config_value('webhook_enabled', 'true'):
                 await safe_edit_message(
-                    "✅ **Webhook CRM Enabled!**\n\nNow you need to define the webhook URL.",
+                    "✅ **Webhook CRM Ativado!**\n\nAgora você precisa definir a URL do webhook.",
                     reply_markup=InlineKeyboardMarkup([
-                        [InlineKeyboardButton("🔗 Set URL", callback_data="webhook_set_url")],
-                        [InlineKeyboardButton("🔙 Back", callback_data="config_webhook")]
+                        [InlineKeyboardButton("🔗 Definir URL", callback_data="webhook_set_url")],
+                        [InlineKeyboardButton("🔙 Voltar", callback_data="config_webhook")]
                     ])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error enabling webhook.",
+                    "❌ Erro ao ativar webhook.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="config_webhook")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="config_webhook")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "webhook_disable":
         if flow_manager.is_admin(user.id):
             if set_config_value('webhook_enabled', 'false'):
                 await safe_edit_message(
-                    "❌ **Webhook CRM Disabled!**\n\nThe webhook will no longer be sent.",
+                    "❌ **Webhook CRM Desativado!**\n\nO webhook não será mais enviado.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="config_webhook")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="config_webhook")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error disabling webhook.",
+                    "❌ Erro ao desativar webhook.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="config_webhook")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="config_webhook")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "webhook_set_url":
         if flow_manager.is_admin(user.id):
             context.user_data['setting_webhook_url'] = True
             await safe_edit_message(
-                "🔗 **Set Webhook URL**\n\nEnter your CRM URL:\n\nExample: https://your-crm.com/webhook",
+                "🔗 **Definir URL do Webhook**\n\nDigite a URL do seu CRM:\n\nExemplo: https://seu-crm.com/webhook",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="config_webhook")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="config_webhook")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "webhook_change_url":
         if flow_manager.is_admin(user.id):
             context.user_data['changing_webhook_url'] = True
             current_url = get_webhook_url()
             await safe_edit_message(
-                f"✏️ **Change Webhook URL**\n\nCurrent URL: {current_url}\n\nEnter the new URL:",
+                f"✏️ **Alterar URL do Webhook**\n\nURL atual: {current_url}\n\nDigite a nova URL:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="config_webhook")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="config_webhook")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_signup_enable":
         if flow_manager.is_admin(user.id):
             if set_config_value('require_signup', 'true'):
                 await safe_edit_message(
-                    "✅ **Require Registration Activated!**\n\nNow the bot will request complete registration from users before showing the flow.",
+                    "✅ **Exigir Cadastro Ativado!**\n\nAgora o bot irá solicitar o cadastro completo dos usuários antes de exibir o fluxo.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error activating require registration.",
+                    "❌ Erro ao ativar exigir cadastro.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_signup_disable":
         if flow_manager.is_admin(user.id):
             if set_config_value('require_signup', 'false'):
                 await safe_edit_message(
-                    "❌ **Require Registration Deactivated!**\n\nThe bot will no longer require registration from users.",
+                    "❌ **Exigir Cadastro Desativado!**\n\nO bot não irá mais exigir cadastro dos usuários.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error deactivating require registration.",
+                    "❌ Erro ao desativar exigir cadastro.",
                     reply_markup=InlineKeyboardMarkup([[
-                        InlineKeyboardButton("🔙 Back", callback_data="admin_config")
+                        InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")
                     ]])
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_welcome":
         if flow_manager.is_admin(user.id):
             welcome_enabled = is_welcome_enabled()
             welcome_data = get_welcome_message()
             
-            status_text = "✅ **Enabled**" if welcome_enabled else "❌ **Disabled**"
-            media_text = f"🖼️ **Media:** {welcome_data['media_type']}" if welcome_data['media_url'] else "🖼️ **Media:** None"
+            status_text = "✅ **Ativada**" if welcome_enabled else "❌ **Desativada**"
+            media_text = f"🖼️ **Mídia:** {welcome_data['media_type']}" if welcome_data['media_url'] else "🖼️ **Mídia:** Nenhuma"
             text_preview = welcome_data['text'][:50] + "..." if len(welcome_data['text']) > 50 else welcome_data['text']
-            text_display = f"📝 **Text:** {text_preview}" if welcome_data['text'] else "📝 **Text:** None"
+            text_display = f"📝 **Texto:** {text_preview}" if welcome_data['text'] else "📝 **Texto:** Nenhum"
             
             await safe_edit_message(
-                f"🎬 **Welcome Message Configuration**\n\n"
+                f"🎬 **Configuração de Mensagem de Boas-vindas**\n\n"
                 f"**Status:** {status_text}\n"
                 f"{text_display}\n"
                 f"{media_text}\n\n"
-                f"Configure a message that will be sent before user registration.",
+                f"Configure uma mensagem que será enviada antes do cadastro do usuário.",
                 reply_markup=create_config_welcome_keyboard()
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_welcome_enable":
         if flow_manager.is_admin(user.id):
             if set_config_value('welcome_enabled', 'true'):
                 await safe_edit_message(
-                    "✅ **Welcome Message Activated!**\n\nThe message will be sent before user registration.",
+                    "✅ **Mensagem de Boas-vindas Ativada!**\n\nA mensagem será enviada antes do cadastro do usuário.",
                     reply_markup=create_config_welcome_keyboard()
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error activating welcome message.",
+                    "❌ Erro ao ativar mensagem de boas-vindas.",
                     reply_markup=create_config_welcome_keyboard()
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_welcome_disable":
         if flow_manager.is_admin(user.id):
             if set_config_value('welcome_enabled', 'false'):
                 await safe_edit_message(
-                    "❌ **Welcome Message Disabled!**\n\nThe message will no longer be sent.",
+                    "❌ **Mensagem de Boas-vindas Desativada!**\n\nA mensagem não será mais enviada.",
                     reply_markup=create_config_welcome_keyboard()
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error disabling welcome message.",
+                    "❌ Erro ao desativar mensagem de boas-vindas.",
                     reply_markup=create_config_welcome_keyboard()
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_welcome_text":
         if flow_manager.is_admin(user.id):
             context.user_data['configuring_welcome_text'] = True
             current_text = get_config_value('welcome_text', '')
             await safe_edit_message(
-                f"📝 **Edit Welcome Message Text**\n\n"
-                f"Current text:\n{current_text}\n\n"
-                f"Enter the new welcome message text:",
+                f"📝 **Editar Texto da Mensagem de Boas-vindas**\n\n"
+                f"Texto atual:\n{current_text}\n\n"
+                f"Digite o novo texto da mensagem de boas-vindas:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="config_welcome")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="config_welcome")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_welcome_photo":
         if flow_manager.is_admin(user.id):
@@ -3508,18 +3524,18 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             current_media = get_config_value('welcome_media_url', '')
             current_type = get_config_value('welcome_media_type', '')
             
-            media_info = f"Type: {current_type}\nFile: {current_media}" if current_media else "No photo configured"
+            media_info = f"Tipo: {current_type}\nArquivo: {current_media}" if current_media else "Nenhuma foto configurada"
             
             await safe_edit_message(
-                f"🖼️ **Set Welcome Message Photo**\n\n"
-                f"Current configuration:\n{media_info}\n\n"
-                f"Send a photo to use in the welcome message:",
+                f"🖼️ **Definir Foto da Mensagem de Boas-vindas**\n\n"
+                f"Configuração atual:\n{media_info}\n\n"
+                f"Envie uma foto para usar na mensagem de boas-vindas:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="config_welcome")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="config_welcome")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_welcome_video":
         if flow_manager.is_admin(user.id):
@@ -3528,18 +3544,18 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             current_media = get_config_value('welcome_media_url', '')
             current_type = get_config_value('welcome_media_type', '')
             
-            media_info = f"Type: {current_type}\nFile: {current_media}" if current_media else "No video configured"
+            media_info = f"Tipo: {current_type}\nArquivo: {current_media}" if current_media else "Nenhum vídeo configurado"
             
             await safe_edit_message(
-                f"🎬 **Set Welcome Message Video**\n\n"
-                f"Current configuration:\n{media_info}\n\n"
-                f"Send a video to use in the welcome message:",
+                f"🎬 **Definir Vídeo da Mensagem de Boas-vindas**\n\n"
+                f"Configuração atual:\n{media_info}\n\n"
+                f"Envie um vídeo para usar na mensagem de boas-vindas:",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="config_welcome")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="config_welcome")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_welcome_video_note":
         if flow_manager.is_admin(user.id):
@@ -3548,34 +3564,34 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             current_media = get_config_value('welcome_media_url', '')
             current_type = get_config_value('welcome_media_type', '')
             
-            media_info = f"Type: {current_type}\nFile: {current_media}" if current_media else "No round video configured"
+            media_info = f"Tipo: {current_type}\nArquivo: {current_media}" if current_media else "Nenhum vídeo redondo configurado"
             
             await safe_edit_message(
-                f"⭕ **Set Welcome Message Round Video**\n\n"
-                f"Current configuration:\n{media_info}\n\n"
-                f"Send a round video (video note) to use in the welcome message.\n\n"
-                f"💡 **Tip**: You can send a normal video and it will be automatically converted to round format.",
+                f"⭕ **Definir Vídeo Redondo da Mensagem de Boas-vindas**\n\n"
+                f"Configuração atual:\n{media_info}\n\n"
+                f"Envie um vídeo redondo (video note) para usar na mensagem de boas-vindas.\n\n"
+                f"💡 **Dica**: Você pode enviar um vídeo normal e ele será convertido automaticamente para formato redondo.",
                 reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("🔙 Cancel", callback_data="config_welcome")
+                    InlineKeyboardButton("🔙 Cancelar", callback_data="config_welcome")
                 ]])
             )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_welcome_remove_media":
         if flow_manager.is_admin(user.id):
             if set_config_value('welcome_media_url', '') and set_config_value('welcome_media_type', ''):
                 await safe_edit_message(
-                    "🗑️ **Media Removed!**\n\nThe welcome message will now be text only.",
+                    "🗑️ **Mídia Removida!**\n\nA mensagem de boas-vindas agora será apenas texto.",
                     reply_markup=create_config_welcome_keyboard()
                 )
             else:
                 await safe_edit_message(
-                    "❌ Error removing media.",
+                    "❌ Erro ao remover mídia.",
                     reply_markup=create_config_welcome_keyboard()
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "config_welcome_preview":
         if flow_manager.is_admin(user.id):
@@ -3583,7 +3599,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             
             if not welcome_data['text'] and not welcome_data['media_url']:
                 await safe_edit_message(
-                    "⚠️ **No Message Configured**\n\nConfigure text or media first.",
+                    "⚠️ **Nenhuma Mensagem Configurada**\n\nConfigure um texto ou mídia primeiro.",
                     reply_markup=create_config_welcome_keyboard()
                 )
                 return
@@ -3593,16 +3609,16 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 await send_welcome_message(update, context)
                 
                 await safe_edit_message(
-                    "👁️ **Preview Sent!**\n\nThe welcome message was sent above for preview.",
+                    "👁️ **Visualização Enviada!**\n\nA mensagem de boas-vindas foi enviada acima para visualização.",
                     reply_markup=create_config_welcome_keyboard()
                 )
             except Exception as e:
                 await safe_edit_message(
-                    f"❌ **Error sending preview**\n\n{str(e)}",
+                    f"❌ **Erro na Visualização**\n\nErro: {str(e)}",
                     reply_markup=create_config_welcome_keyboard()
                 )
         else:
-            await safe_edit_message("❌ You do not have admin permission.")
+            await safe_edit_message("❌ Você não tem permissão de administrador.")
     
     elif query.data == "share_phone":
         # Solicitar compartilhamento de telefone via teclado personalizado
@@ -3667,25 +3683,25 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 
                 if data_type == "nome":
                     await safe_edit_message(
-                        "👤 **Type your full name:**",
+                        "👤 **Digite seu nome completo:**",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Cancel", callback_data="cancel_data_collection")
+                            InlineKeyboardButton("🔙 Cancelar", callback_data="cancel_data_collection")
                         ]])
                     )
                     context.user_data['waiting_for_name'] = True
                 elif data_type == "telefone":
                     await safe_edit_message(
-                        "📱 **Type your phone number:**\n\nFormat: (11) 99999-9999",
+                        "📱 **Digite seu número de telefone:**\n\nFormato: (11) 99999-9999",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Cancel", callback_data="cancel_data_collection")
+                            InlineKeyboardButton("🔙 Cancelar", callback_data="cancel_data_collection")
                         ]])
                     )
                     context.user_data['waiting_for_phone'] = True
                 elif data_type == "email":
                     await safe_edit_message(
-                        "📧 **Type your email:**\n\nExample: user@example.com",
+                        "📧 **Digite seu email:**\n\nExemplo: usuario@exemplo.com",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("🔙 Cancel", callback_data="cancel_data_collection")
+                            InlineKeyboardButton("🔙 Cancelar", callback_data="cancel_data_collection")
                         ]])
                     )
                     context.user_data['waiting_for_email'] = True
@@ -3693,15 +3709,15 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 # Todos os dados foram coletados
                 await finish_data_collection(query, context)
         else:
-            await query.message.reply_text("❌ Error in data collection.")
+            await query.message.reply_text("❌ Erro na coleta de dados.")
     
     elif query.data == "cancel_data_collection":
         # Cancelar coleta de dados
         context.user_data.clear()
         await query.message.reply_text(
-            "❌ **Data Collection Cancelled**\n\nYou can try again by sending /start",
+            "❌ **Coleta de Dados Cancelada**\n\nVocê pode tentar novamente enviando /start",
             reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("🔄 Try Again", callback_data="restart_data_collection")
+                InlineKeyboardButton("🔄 Tentar Novamente", callback_data="restart_data_collection")
             ]])
         )
     
@@ -3731,7 +3747,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             
             await request_missing_data(update, context, missing_data)
         else:
-            await query.message.reply_text("✅ All data has already been provided!")
+            await query.message.reply_text("✅ Todos os dados já foram fornecidos!")
     
 
     
@@ -3742,7 +3758,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             default_flow = flows[0]  # Primeiro fluxo ativo
             await execute_flow(query, default_flow['id'])
         else:
-            await query.message.reply_text("❌ No flows configured.")
+            await query.message.reply_text("❌ Nenhum fluxo configurado.")
 
 async def execute_flow(query, flow_id):
     """Executa um fluxo específico"""
@@ -3750,7 +3766,7 @@ async def execute_flow(query, flow_id):
     steps = flow_manager.get_flow_steps(flow_id)
     
     if not steps:
-        await query.message.reply_text("❌ Empty flow or not found.")
+        await query.message.reply_text("❌ Fluxo vazio ou não encontrado.")
         return
     
     # Executar primeira etapa
@@ -4552,7 +4568,7 @@ async def request_missing_data(update, context, missing_data):
     
     print(f"🔍 DEBUG: request_missing_data - Usuário {user.id} - Dados faltantes: {missing_data}")
 
-            # Send welcome video note before registration (if configured)
+    # Enviar vídeo redondo de boas-vindas antes do cadastro (se configurado)
     from flow_manager import send_welcome_video_note_for_signup
     print(f"🔍 DEBUG: Chamando send_welcome_video_note_for_signup para usuário {user.id}")
     video_sent = await send_welcome_video_note_for_signup(update, context)
@@ -4586,20 +4602,13 @@ async def request_missing_data(update, context, missing_data):
     context.user_data['missing_data'] = remaining_data
     
     # Mensagem inicial
-    message = "📋 *Registration Required*\n\n"
-    message += "To continue, we need some information from you:\n\n"
-    
-    # Mapeamento para traduzir tipos de dados para inglês
-    data_type_translations = {
-        "telefone": "Phone",
-        "email": "Email"
-    }
-    
+    message = "📋 *Cadastro Necessário*\n\n"
+    message += "Para continuar, precisamos de algumas informações:\n\n"
+
     for i, data_type in enumerate(remaining_data, 1):
-        translated_type = data_type_translations.get(data_type, data_type.title())
-        message += f"{i}. {translated_type}\n"
-    
-    message += "\nUse the buttons below to share your information:"
+        message += f"{i}. {data_type.title()}\n"
+
+    message += "\nUse os botões abaixo para compartilhar suas informações:"
 
     # Criar botões personalizados baseados nos dados que ainda faltam
     buttons = []
@@ -4615,14 +4624,14 @@ async def request_missing_data(update, context, missing_data):
 
     # Mostrar apenas botões para dados que ainda faltam
     if "telefone" in remaining_data and not has_phone:
-        buttons.append([KeyboardButton("📱 Share Phone", request_contact=True)])
+        buttons.append([KeyboardButton("�� Compartilhar Telefone", request_contact=True)])
         # Definir estado para esperar contato
         context.user_data['waiting_for_contact'] = True
 
     if "email" in remaining_data and not has_email:
-        buttons.append([KeyboardButton("📧 Send Email")])
+        buttons.append([KeyboardButton("📧 Enviar Email")])
 
-    buttons.append([KeyboardButton("❌ Cancel")])
+    buttons.append([KeyboardButton("❌ Cancelar")])
     
     # Verificar se todos os dados foram coletados
     if not remaining_data:
@@ -4672,7 +4681,7 @@ async def finish_data_collection(update, context):
     if collected_data:
         update_user_data(user.id, collected_data)
         
-        # Send registration completed webhook
+        # Enviar webhook de cadastro concluído
         user_data = {
             'telegram_id': user.id,
             'username': user.username,
@@ -4686,7 +4695,7 @@ async def finish_data_collection(update, context):
 
         # Se não há fluxo padrão, mostrar mensagem
     await update.message.reply_text(
-        "✅ **Registration Completed!**",
+        "✅ **Cadastro foi Concluído!.",
         parse_mode="Markdown",
         reply_markup=ReplyKeyboardRemove()
     )

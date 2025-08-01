@@ -1,4 +1,5 @@
 import os
+import asyncio
 from database import create_connection
 from mysql.connector import Error
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -523,91 +524,91 @@ class FlowManager:
                 connection.close()
 
 def create_admin_keyboard():
-    """Creates keyboard for admin menu"""
+    """Cria teclado para menu admin"""
     keyboard = [
-        [InlineKeyboardButton("📝 Manage Flows", callback_data="admin_flows")],
-        [InlineKeyboardButton("⭐ Set Default Flow", callback_data="set_default_flow")],
-        [InlineKeyboardButton("📊 Statistics", callback_data="admin_stats")],
-        [InlineKeyboardButton("⚙️ Settings", callback_data="admin_config")],
-        [InlineKeyboardButton("🔄 Reset Welcome Video", callback_data="reset_welcome_video")],
-        [InlineKeyboardButton("🔙 Back", callback_data="back_to_main")]
+        [InlineKeyboardButton("📝 Gerenciar Fluxos", callback_data="admin_flows")],
+        [InlineKeyboardButton("⭐ Definir Fluxo Padrão", callback_data="set_default_flow")],
+        [InlineKeyboardButton("📊 Estatísticas", callback_data="admin_stats")],
+        [InlineKeyboardButton("⚙️ Configurações", callback_data="admin_config")],
+        [InlineKeyboardButton("🔄 Resetar Vídeo Boas-vindas", callback_data="reset_welcome_video")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="back_to_main")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_flow_management_keyboard():
-    """Creates keyboard for flow management"""
+    """Cria teclado para gerenciamento de fluxos"""
     keyboard = [
-        [InlineKeyboardButton("➕ Create New Flow", callback_data="create_flow")],
-        [InlineKeyboardButton("📋 List Flows", callback_data="list_flows")],
-        [InlineKeyboardButton("✏️ Edit Flow", callback_data="edit_flow")],
-        [InlineKeyboardButton("🗑️ Delete Flow", callback_data="delete_flow")],
-        [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
+        [InlineKeyboardButton("➕ Criar Novo Fluxo", callback_data="create_flow")],
+        [InlineKeyboardButton("📋 Listar Fluxos", callback_data="list_flows")],
+        [InlineKeyboardButton("✏️ Editar Fluxo", callback_data="edit_flow")],
+        [InlineKeyboardButton("🗑️ Deletar Fluxo", callback_data="delete_flow")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="admin_menu")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_message_step_keyboard(step_number):
-    """Creates keyboard for specific message step"""
+    """Cria teclado para etapa de mensagem específica"""
     keyboard = [
-        [InlineKeyboardButton(f"📝 Message + Text", callback_data="add_message_text")],
-        [InlineKeyboardButton(f"🖼️ Message + Image", callback_data="add_message_image")],
-        [InlineKeyboardButton(f"🎥 Message + Video", callback_data="add_message_video")],
-        [InlineKeyboardButton(f"🎬 Message + Video Note", callback_data="add_message_video_note")],
-        [InlineKeyboardButton(f"🔘 Message + Image + Button", callback_data="add_message_image_button")],
-        [InlineKeyboardButton(f"🔘 Message + Text + Button", callback_data="add_message_text_button")],
-        [InlineKeyboardButton(f"🔘 Message + Video + Button", callback_data="add_message_video_button")],
-        [InlineKeyboardButton(f"🔘 Message + Video Note + Button", callback_data="add_message_video_note_button")],
-        [InlineKeyboardButton("🔙 Back", callback_data="admin_flows")]
+        [InlineKeyboardButton(f"📝 Mensagem + Texto", callback_data="add_message_text")],
+        [InlineKeyboardButton(f"🖼️ Mensagem + Imagem", callback_data="add_message_image")],
+        [InlineKeyboardButton(f"🎥 Mensagem + Vídeo", callback_data="add_message_video")],
+        [InlineKeyboardButton(f"🎬 Mensagem + Vídeo Redondo", callback_data="add_message_video_note")],
+        [InlineKeyboardButton(f"🔘 Mensagem + Imagem + Botão", callback_data="add_message_image_button")],
+        [InlineKeyboardButton(f"🔘 Mensagem + Texto + Botão", callback_data="add_message_text_button")],
+        [InlineKeyboardButton(f"🔘 Mensagem + Vídeo + Botão", callback_data="add_message_video_button")],
+        [InlineKeyboardButton(f"🔘 Mensagem + Vídeo Redondo + Botão", callback_data="add_message_video_note_button")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_simple_flow_control_keyboard():
-    """Creates simple keyboard for flow control"""
+    """Cria teclado simples para controle do fluxo"""
     keyboard = [
-        [InlineKeyboardButton("⏭️ Continue Flow", callback_data="continue_flow")],
-        [InlineKeyboardButton("🏁 Finish Flow", callback_data="finish_flow")],
-        [InlineKeyboardButton("🔙 Back", callback_data="admin_flows")]
+        [InlineKeyboardButton("⏭️ Prosseguir Fluxo", callback_data="continue_flow")],
+        [InlineKeyboardButton("🏁 Finalizar Fluxo", callback_data="finish_flow")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_media_options_keyboard():
-    """Creates keyboard for media options"""
+    """Cria teclado para opções de mídia"""
     keyboard = [
-        [InlineKeyboardButton("📎 Attach Media", callback_data="attach_media")],
-        [InlineKeyboardButton("🔗 Use URL", callback_data="use_media_url")],
-        [InlineKeyboardButton("📝 Text Only", callback_data="text_only")],
-        [InlineKeyboardButton("🔙 Back", callback_data="step_type_selection")]
+        [InlineKeyboardButton("📎 Anexar Mídia", callback_data="attach_media")],
+        [InlineKeyboardButton("🔗 Usar URL", callback_data="use_media_url")],
+        [InlineKeyboardButton("📝 Apenas Texto", callback_data="text_only")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="step_type_selection")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_button_options_keyboard():
-    """Creates keyboard for button options"""
+    """Cria teclado para opções de botões"""
     keyboard = [
-        [InlineKeyboardButton("🔘 Simple Button", callback_data="button_simple")],
-        [InlineKeyboardButton("🔗 URL Button", callback_data="button_url")],
-        [InlineKeyboardButton("📞 Contact Button", callback_data="button_contact")],
-        [InlineKeyboardButton("📍 Location Button", callback_data="button_location")],
-        [InlineKeyboardButton("➕ Add More Buttons", callback_data="add_more_buttons")],
-        [InlineKeyboardButton("✅ Finish Step", callback_data="finish_step")],
-        [InlineKeyboardButton("🔙 Back", callback_data="step_type_selection")]
+        [InlineKeyboardButton("🔘 Botão Simples", callback_data="button_simple")],
+        [InlineKeyboardButton("🔗 Botão com URL", callback_data="button_url")],
+        [InlineKeyboardButton("📞 Botão Contato", callback_data="button_contact")],
+        [InlineKeyboardButton("📍 Botão Localização", callback_data="button_location")],
+        [InlineKeyboardButton("➕ Adicionar Mais Botões", callback_data="add_more_buttons")],
+        [InlineKeyboardButton("✅ Finalizar Etapa", callback_data="finish_step")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="step_type_selection")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_flow_control_keyboard():
-    """Creates keyboard for flow control"""
+    """Cria teclado para controle do fluxo"""
     keyboard = [
-        [InlineKeyboardButton("⏭️ Continue Flow", callback_data="continue_flow")],
-        [InlineKeyboardButton("🏁 Finish Flow", callback_data="finish_flow")],
-        [InlineKeyboardButton("🔙 Back", callback_data="admin_flows")]
+        [InlineKeyboardButton("⏭️ Prosseguir Fluxo", callback_data="continue_flow")],
+        [InlineKeyboardButton("🏁 Finalizar Fluxo", callback_data="finish_flow")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_step_preview_keyboard():
-    """Creates keyboard for step preview"""
+    """Cria teclado para preview da etapa"""
     keyboard = [
-        [InlineKeyboardButton("✅ Confirm Step", callback_data="confirm_step")],
-        [InlineKeyboardButton("✏️ Edit Step", callback_data="edit_step")],
-        [InlineKeyboardButton("🗑️ Delete Step", callback_data="delete_step")],
-        [InlineKeyboardButton("🔙 Back", callback_data="step_type_selection")]
+        [InlineKeyboardButton("✅ Confirmar Etapa", callback_data="confirm_step")],
+        [InlineKeyboardButton("✏️ Editar Etapa", callback_data="edit_step")],
+        [InlineKeyboardButton("🗑️ Deletar Etapa", callback_data="delete_step")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="step_type_selection")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -665,46 +666,46 @@ def create_delete_flow_keyboard(flows):
     return InlineKeyboardMarkup(keyboard)
 
 def create_config_keyboard():
-    """Creates keyboard for settings menu"""
+    """Cria teclado para menu de configurações"""
     keyboard = [
-        [InlineKeyboardButton("📱 Collect Phone Number", callback_data="config_phone")],
-        [InlineKeyboardButton("📧 Collect Email", callback_data="config_email")],
-        [InlineKeyboardButton("👤 Require Signup", callback_data="config_require_signup")],
-        [InlineKeyboardButton("🎬 Welcome Message", callback_data="config_welcome")],
+        [InlineKeyboardButton("📱 Coleta de Número", callback_data="config_phone")],
+        [InlineKeyboardButton("📧 Coleta de Email", callback_data="config_email")],
+        [InlineKeyboardButton("👤 Exigir Cadastro", callback_data="config_require_signup")],
+        [InlineKeyboardButton("🎬 Mensagem de Boas-vindas", callback_data="config_welcome")],
         [InlineKeyboardButton("🔗 Webhook CRM", callback_data="config_webhook")],
-        [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
+        [InlineKeyboardButton("🔙 Voltar", callback_data="admin_menu")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_config_phone_keyboard():
-    """Creates keyboard for phone collection configuration"""
+    """Cria teclado para configuração de coleta de número"""
     keyboard = [
-        [InlineKeyboardButton("✅ Enable Phone Collection", callback_data="config_phone_enable")],
-        [InlineKeyboardButton("❌ Disable Phone Collection", callback_data="config_phone_disable")],
-        [InlineKeyboardButton("🔙 Back", callback_data="admin_config")]
+        [InlineKeyboardButton("✅ Ativar Coleta de Número", callback_data="config_phone_enable")],
+        [InlineKeyboardButton("❌ Desativar Coleta de Número", callback_data="config_phone_disable")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_config_email_keyboard():
-    """Creates keyboard for email collection configuration"""
+    """Cria teclado para configuração de coleta de email"""
     keyboard = [
-        [InlineKeyboardButton("✅ Enable Email Collection", callback_data="config_email_enable")],
-        [InlineKeyboardButton("❌ Disable Email Collection", callback_data="config_email_disable")],
-        [InlineKeyboardButton("🔙 Back", callback_data="admin_config")]
+        [InlineKeyboardButton("✅ Ativar Coleta de Email", callback_data="config_email_enable")],
+        [InlineKeyboardButton("❌ Desativar Coleta de Email", callback_data="config_email_disable")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_config_signup_keyboard():
-    """Creates keyboard for signup requirement configuration"""
+    """Cria teclado para configuração de exigir cadastro"""
     keyboard = [
-        [InlineKeyboardButton("✅ Enable Require Signup", callback_data="config_signup_enable")],
-        [InlineKeyboardButton("❌ Disable Require Signup", callback_data="config_signup_disable")],
-        [InlineKeyboardButton("🔙 Back", callback_data="admin_config")]
+        [InlineKeyboardButton("✅ Ativar Exigir Cadastro", callback_data="config_signup_enable")],
+        [InlineKeyboardButton("❌ Desativar Exigir Cadastro", callback_data="config_signup_disable")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def create_config_welcome_keyboard():
-    """Creates keyboard for welcome message configuration"""
+    """Cria teclado para configuração de mensagem de boas-vindas"""
     welcome_enabled = get_config_value('welcome_enabled', 'false').lower() == 'true'
     welcome_media = get_config_value('welcome_media_url', '')
     welcome_text = get_config_value('welcome_text', '')
@@ -713,38 +714,38 @@ def create_config_welcome_keyboard():
     keyboard = []
     
     if welcome_enabled:
-        keyboard.append([InlineKeyboardButton("❌ Disable Message", callback_data="config_welcome_disable")])
+        keyboard.append([InlineKeyboardButton("❌ Desativar Mensagem", callback_data="config_welcome_disable")])
     else:
-        keyboard.append([InlineKeyboardButton("✅ Enable Message", callback_data="config_welcome_enable")])
+        keyboard.append([InlineKeyboardButton("✅ Ativar Mensagem", callback_data="config_welcome_enable")])
     
-    keyboard.append([InlineKeyboardButton("📝 Edit Text", callback_data="config_welcome_text")])
+    keyboard.append([InlineKeyboardButton("📝 Editar Texto", callback_data="config_welcome_text")])
     
-    # Media options separated
-    keyboard.append([InlineKeyboardButton("🖼️ Set Photo", callback_data="config_welcome_photo")])
-    keyboard.append([InlineKeyboardButton("🎬 Set Video", callback_data="config_welcome_video")])
-    keyboard.append([InlineKeyboardButton("⭕ Set Video Note", callback_data="config_welcome_video_note")])
+    # Opções de mídia separadas
+    keyboard.append([InlineKeyboardButton("🖼️ Definir Foto", callback_data="config_welcome_photo")])
+    keyboard.append([InlineKeyboardButton("🎬 Definir Vídeo", callback_data="config_welcome_video")])
+    keyboard.append([InlineKeyboardButton("⭕ Definir Vídeo Redondo", callback_data="config_welcome_video_note")])
     
     if welcome_media:
         media_type_text = {
-            'photo': '🖼️ Photo',
-            'video': '🎬 Video', 
-            'video_note': '⭕ Video Note',
-            'document': '📄 Document'
-        }.get(welcome_media_type, '📁 File')
+            'photo': '🖼️ Foto',
+            'video': '🎬 Vídeo', 
+            'video_note': '⭕ Vídeo Redondo',
+            'document': '📄 Documento'
+        }.get(welcome_media_type, '📁 Arquivo')
         
-        keyboard.append([InlineKeyboardButton(f"🗑️ Remove {media_type_text}", callback_data="config_welcome_remove_media")])
+        keyboard.append([InlineKeyboardButton(f"🗑️ Remover {media_type_text}", callback_data="config_welcome_remove_media")])
     
-    keyboard.append([InlineKeyboardButton("👁️ Preview", callback_data="config_welcome_preview")])
-    keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="admin_config")])
+    keyboard.append([InlineKeyboardButton("👁️ Visualizar", callback_data="config_welcome_preview")])
+    keyboard.append([InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")])
     
     return InlineKeyboardMarkup(keyboard)
 
 def is_welcome_enabled():
-    """Checks if welcome message is enabled"""
+    """Verifica se a mensagem de boas-vindas está ativada"""
     return get_config_value('welcome_enabled', 'false').lower() == 'true'
 
 def get_welcome_message():
-    """Gets the configured welcome message"""
+    """Obtém a mensagem de boas-vindas configurada"""
     return {
         'text': get_config_value('welcome_text', ''),
         'media_url': get_config_value('welcome_media_url', ''),
@@ -847,50 +848,114 @@ async def send_welcome_video_note_for_signup(update, context):
         print(f"🔍 DEBUG: Usuário {user.id} já recebeu o vídeo redondo de boas-vindas")
         return False
     
-    try:
-        # Enviar vídeo (normal ou redondo)
-        if welcome_data['media_url'].startswith('uploads/') or welcome_data['media_url'].startswith('uploads\\'):
-            # Arquivo local
-            # Verificar se o arquivo existe
-            if not os.path.exists(welcome_data['media_url']):
-                print(f"❌ Arquivo não encontrado: {welcome_data['media_url']}")
-                return False
+    # Configurações de retry
+    max_retries = 3
+    timeout_seconds = 30.0
+    
+    # Verificar tamanho do arquivo se for local
+    if welcome_data['media_url'].startswith('uploads/') or welcome_data['media_url'].startswith('uploads\\'):
+        if os.path.exists(welcome_data['media_url']):
+            file_size = os.path.getsize(welcome_data['media_url'])
+            file_size_mb = file_size / (1024 * 1024)
+            print(f"🔍 DEBUG: Tamanho do arquivo: {file_size_mb:.2f} MB")
             
-            # Enviar baseado no tipo de vídeo
-            if welcome_data['media_type'] == 'video_note':
-                # Enviar como video_note
-                await update.message.reply_video_note(
-                    video_note=open(welcome_data['media_url'], 'rb')
-                )
+            # Se o arquivo for muito grande (> 50MB), tentar comprimir
+            if file_size_mb > 50:
+                print(f"🔍 DEBUG: Arquivo muito grande ({file_size_mb:.2f} MB), tentando comprimir...")
+                try:
+                    from bot import convert_video_to_video_note
+                    with open(welcome_data['media_url'], 'rb') as f:
+                        video_data = f.read()
+                    
+                    conversion_success, converted_data, conversion_message = await convert_video_to_video_note(video_data)
+                    if conversion_success:
+                        # Salvar versão comprimida
+                        compressed_path = welcome_data['media_url'].replace('.mp4', '_compressed.mp4')
+                        with open(compressed_path, 'wb') as f:
+                            f.write(converted_data)
+                        welcome_data['media_url'] = compressed_path
+                        print(f"🔍 DEBUG: Arquivo comprimido salvo em: {compressed_path}")
+                    else:
+                        print(f"🔍 DEBUG: Falha na compressão: {conversion_message}")
+                except Exception as e:
+                    print(f"🔍 DEBUG: Erro ao tentar comprimir: {e}")
+    
+    for attempt in range(max_retries):
+        try:
+            print(f"🔍 DEBUG: Tentativa {attempt + 1}/{max_retries} de envio do vídeo de boas-vindas")
+            
+            # Enviar vídeo (normal ou redondo) com timeout
+            if welcome_data['media_url'].startswith('uploads/') or welcome_data['media_url'].startswith('uploads\\'):
+                # Arquivo local
+                # Verificar se o arquivo existe
+                if not os.path.exists(welcome_data['media_url']):
+                    print(f"❌ Arquivo não encontrado: {welcome_data['media_url']}")
+                    return False
+                
+                # Enviar baseado no tipo de vídeo com timeout
+                if welcome_data['media_type'] == 'video_note':
+                    # Enviar como video_note com timeout
+                    await asyncio.wait_for(
+                        update.message.reply_video_note(
+                            video_note=open(welcome_data['media_url'], 'rb')
+                        ),
+                        timeout=timeout_seconds
+                    )
+                else:
+                    # Enviar como vídeo normal com timeout
+                    await asyncio.wait_for(
+                        update.message.reply_video(
+                            video=open(welcome_data['media_url'], 'rb'),
+                            caption=welcome_data['text'] if welcome_data['text'] else None
+                        ),
+                        timeout=timeout_seconds
+                    )
             else:
-                # Enviar como vídeo normal
-                await update.message.reply_video(
-                    video=open(welcome_data['media_url'], 'rb'),
-                    caption=welcome_data['text'] if welcome_data['text'] else None
+                # URL remota com timeout
+                if welcome_data['media_type'] == 'video_note':
+                    await asyncio.wait_for(
+                        update.message.reply_video_note(video_note=welcome_data['media_url']),
+                        timeout=timeout_seconds
+                    )
+                else:
+                    await asyncio.wait_for(
+                        update.message.reply_video(
+                            video=welcome_data['media_url'],
+                            caption=welcome_data['text'] if welcome_data['text'] else None
+                        ),
+                        timeout=timeout_seconds
+                    )
+            
+            # Enviar texto separadamente se for video_note e tiver texto
+            if welcome_data['media_type'] == 'video_note' and welcome_data['text']:
+                await asyncio.wait_for(
+                    update.message.reply_text(welcome_data['text']),
+                    timeout=10.0  # Timeout menor para texto
                 )
-        else:
-            # URL remota
-            if welcome_data['media_type'] == 'video_note':
-                await update.message.reply_video_note(video_note=welcome_data['media_url'])
+            
+            # Marcar que o usuário já recebeu o vídeo
+            mark_welcome_video_sent(user.id)
+            print(f"🔍 DEBUG: ✅ Vídeo de boas-vindas enviado com sucesso para usuário {user.id}")
+            
+            return True
+            
+        except asyncio.TimeoutError:
+            print(f"🔍 DEBUG: ⏰ Timeout na tentativa {attempt + 1} de envio do vídeo de boas-vindas")
+            if attempt == max_retries - 1:
+                print(f"❌ Timeout após {max_retries} tentativas de envio do vídeo de boas-vindas")
+                return False
             else:
-                await update.message.reply_video(
-                    video=welcome_data['media_url'],
-                    caption=welcome_data['text'] if welcome_data['text'] else None
-                )
-        
-        # Enviar texto separadamente se for video_note e tiver texto
-        if welcome_data['media_type'] == 'video_note' and welcome_data['text']:
-            await update.message.reply_text(welcome_data['text'])
-        
-        # Marcar que o usuário já recebeu o vídeo
-        mark_welcome_video_sent(user.id)
-        print(f"🔍 DEBUG: Vídeo de boas-vindas enviado para usuário {user.id}")
-        
-        return True
-        
-    except Exception as e:
-        print(f"❌ Erro ao enviar vídeo redondo de boas-vindas para cadastro: {e}")
-        return False
+                await asyncio.sleep(2)  # Aguardar 2 segundos antes da próxima tentativa
+                
+        except Exception as e:
+            print(f"🔍 DEBUG: ❌ Erro na tentativa {attempt + 1}: {e}")
+            if attempt == max_retries - 1:
+                print(f"❌ Erro ao enviar vídeo redondo de boas-vindas para cadastro após {max_retries} tentativas: {e}")
+                return False
+            else:
+                await asyncio.sleep(2)
+    
+    return False
 
 def get_config_value(config_key, default=None):
     """Obtém o valor de uma configuração do banco de dados"""
@@ -965,39 +1030,39 @@ def is_signup_required():
     return get_config_value('require_signup', 'false').lower() == 'true'
 
 def create_webhook_keyboard():
-    """Creates keyboard for webhook configuration"""
+    """Cria teclado para configuração de webhook"""
     webhook_enabled = is_webhook_enabled()
     webhook_url = get_webhook_url()
     
     keyboard = []
     
     if webhook_enabled:
-        keyboard.append([InlineKeyboardButton("❌ Disable Webhook", callback_data="webhook_disable")])
+        keyboard.append([InlineKeyboardButton("❌ Desativar Webhook", callback_data="webhook_disable")])
         if webhook_url:
-            keyboard.append([InlineKeyboardButton("✏️ Change URL", callback_data="webhook_change_url")])
+            keyboard.append([InlineKeyboardButton("✏️ Alterar URL", callback_data="webhook_change_url")])
         else:
-            keyboard.append([InlineKeyboardButton("🔗 Set URL", callback_data="webhook_set_url")])
+            keyboard.append([InlineKeyboardButton("🔗 Definir URL", callback_data="webhook_set_url")])
     else:
-        keyboard.append([InlineKeyboardButton("✅ Enable Webhook", callback_data="webhook_enable")])
+        keyboard.append([InlineKeyboardButton("✅ Ativar Webhook", callback_data="webhook_enable")])
     
-    keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="admin_config")])
+    keyboard.append([InlineKeyboardButton("🔙 Voltar", callback_data="admin_config")])
     return InlineKeyboardMarkup(keyboard)
 
 def is_webhook_enabled():
-    """Checks if webhook is enabled"""
+    """Verifica se o webhook está ativado"""
     return get_config_value('webhook_enabled', 'false').lower() == 'true'
 
 def get_webhook_url():
-    """Gets the webhook URL"""
+    """Obtém a URL do webhook"""
     return get_config_value('webhook_url', '')
 
 def get_webhook_events():
-    """Gets active webhook events"""
+    """Obtém os eventos ativos do webhook"""
     events = get_config_value('webhook_events', 'bot_access,cadastro_concluido')
     return events.split(',')
 
 def is_webhook_already_sent(telegram_id, event_type):
-    """Checks if webhook was already sent to the user"""
+    """Verifica se o webhook já foi enviado para o usuário"""
     connection = create_connection()
     if not connection:
         return False
@@ -1016,7 +1081,7 @@ def is_webhook_already_sent(telegram_id, event_type):
         return result[0] if result else False
         
     except Error as e:
-        print(f"❌ Error checking webhook sent: {e}")
+        print(f"❌ Erro ao verificar webhook enviado: {e}")
         return False
     finally:
         if connection.is_connected():
@@ -1024,7 +1089,7 @@ def is_webhook_already_sent(telegram_id, event_type):
             connection.close()
 
 def mark_webhook_as_sent(telegram_id, event_type):
-    """Marks webhook as sent to the user"""
+    """Marca o webhook como enviado para o usuário"""
     connection = create_connection()
     if not connection:
         return False
@@ -1048,11 +1113,11 @@ def mark_webhook_as_sent(telegram_id, event_type):
             return False
         
         connection.commit()
-        print(f"✅ Webhook {event_type} marked as sent for user {telegram_id}")
+        print(f"✅ Webhook {event_type} marcado como enviado para usuário {telegram_id}")
         return True
         
     except Error as e:
-        print(f"❌ Error marking webhook as sent: {e}")
+        print(f"❌ Erro ao marcar webhook como enviado: {e}")
         return False
     finally:
         if connection.is_connected():
@@ -1060,7 +1125,7 @@ def mark_webhook_as_sent(telegram_id, event_type):
             connection.close()
 
 def send_webhook(event_type, user_data=None, flow_data=None):
-    """Sends webhook to CRM"""
+    """Envia webhook para CRM"""
     if not is_webhook_enabled():
         return False
     
@@ -1068,21 +1133,21 @@ def send_webhook(event_type, user_data=None, flow_data=None):
     if not webhook_url:
         return False
     
-    # Check if event is active
+    # Verificar se o evento está ativo
     active_events = get_webhook_events()
     if event_type not in active_events:
         return False
     
-    # For bot_access webhook, check if already sent
+    # Para webhook de bot_access, verificar se já foi enviado
     if event_type == 'bot_access' and user_data and 'telegram_id' in user_data:
         if is_webhook_already_sent(user_data['telegram_id'], 'bot_access'):
-            print(f"🔗 Webhook bot_access already sent for user {user_data['telegram_id']}")
+            print(f"🔗 Webhook bot_access já enviado para usuário {user_data['telegram_id']}")
             return True
     
-    # For cadastro_concluido webhook, check if already sent
+    # Para webhook de cadastro_concluido, verificar se já foi enviado
     if event_type == 'cadastro_concluido' and user_data and 'telegram_id' in user_data:
         if is_webhook_already_sent(user_data['telegram_id'], 'cadastro_concluido'):
-            print(f"🔗 Webhook cadastro_concluido already sent for user {user_data['telegram_id']}")
+            print(f"🔗 Webhook cadastro_concluido já enviado para usuário {user_data['telegram_id']}")
             return True
     
     try:
@@ -1091,7 +1156,7 @@ def send_webhook(event_type, user_data=None, flow_data=None):
         import json
         from datetime import datetime
         
-        # Prepare webhook data
+        # Preparar dados do webhook
         webhook_data = {
             'event_type': event_type,
             'timestamp': datetime.now().isoformat(),
@@ -1100,7 +1165,7 @@ def send_webhook(event_type, user_data=None, flow_data=None):
             'flow_data': flow_data or {}
         }
         
-        # Send webhook asynchronously
+        # Enviar webhook de forma assíncrona
         async def send_webhook_async():
             try:
                 async with aiohttp.ClientSession() as session:
@@ -1111,48 +1176,48 @@ def send_webhook(event_type, user_data=None, flow_data=None):
                         timeout=aiohttp.ClientTimeout(total=10)
                     ) as response:
                         if response.status == 200:
-                            print(f"✅ Webhook sent successfully: {event_type}")
+                            print(f"✅ Webhook enviado com sucesso: {event_type}")
                             
-                            # Mark as sent if it's bot_access or cadastro_concluido
+                            # Marcar como enviado se for bot_access ou cadastro_concluido
                             if event_type in ['bot_access', 'cadastro_concluido'] and user_data and 'telegram_id' in user_data:
                                 mark_webhook_as_sent(user_data['telegram_id'], event_type)
                             
                             return True
                         else:
-                            print(f"❌ Webhook error: {response.status}")
+                            print(f"❌ Erro no webhook: {response.status}")
                             return False
             except Exception as e:
-                print(f"❌ Error sending webhook: {e}")
+                print(f"❌ Erro ao enviar webhook: {e}")
                 return False
         
-        # Execute asynchronously
+        # Executar de forma assíncrona
         loop = asyncio.get_event_loop()
         if loop.is_running():
-            # If we're already in an async loop, create task
+            # Se já estamos em um loop assíncrono, criar task
             asyncio.create_task(send_webhook_async())
         else:
-            # If not, execute directly
+            # Se não, executar diretamente
             loop.run_until_complete(send_webhook_async())
         
         return True
         
     except Exception as e:
-        print(f"❌ Error preparing webhook: {e}")
+        print(f"❌ Erro ao preparar webhook: {e}")
         return False
 
 def create_stats_keyboard():
-    """Creates keyboard for statistics menu"""
+    """Cria teclado para menu de estatísticas"""
     keyboard = [
-        [InlineKeyboardButton("📊 Full Report", callback_data="stats_full_report")],
-        [InlineKeyboardButton("👥 Users Report", callback_data="stats_users_report")],
-        [InlineKeyboardButton("📝 Flows Report", callback_data="stats_flows_report")],
-        [InlineKeyboardButton("📈 General Stats", callback_data="stats_general")],
-        [InlineKeyboardButton("🔙 Back", callback_data="admin_menu")]
+        [InlineKeyboardButton("📊 Relatório Completo", callback_data="stats_full_report")],
+        [InlineKeyboardButton("👥 Relatório de Usuários", callback_data="stats_users_report")],
+        [InlineKeyboardButton("📝 Relatório de Fluxos", callback_data="stats_flows_report")],
+        [InlineKeyboardButton("📈 Estatísticas Gerais", callback_data="stats_general")],
+        [InlineKeyboardButton("🔙 Voltar", callback_data="admin_menu")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def get_general_stats():
-    """Gets general system statistics"""
+    """Obtém estatísticas gerais do sistema"""
     connection = create_connection()
     if not connection:
         return None
@@ -1160,27 +1225,27 @@ def get_general_stats():
     try:
         cursor = connection.cursor()
         
-        # Count users
+        # Contar usuários
         cursor.execute("SELECT COUNT(*) FROM users WHERE is_active = TRUE")
         total_users = cursor.fetchone()[0]
         
-        # Count users with complete data
+        # Contar usuários com dados completos
         cursor.execute("SELECT COUNT(*) FROM users WHERE name IS NOT NULL AND phone IS NOT NULL AND email IS NOT NULL")
         users_with_data = cursor.fetchone()[0]
         
-        # Count flows
+        # Contar fluxos
         cursor.execute("SELECT COUNT(*) FROM flows WHERE is_active = TRUE")
         total_flows = cursor.fetchone()[0]
         
-        # Count steps
+        # Contar etapas
         cursor.execute("SELECT COUNT(*) FROM flow_steps WHERE is_active = TRUE")
         total_steps = cursor.fetchone()[0]
         
-        # Count buttons
+        # Contar botões
         cursor.execute("SELECT COUNT(*) FROM buttons WHERE is_active = TRUE")
         total_buttons = cursor.fetchone()[0]
         
-        # Users by month (last 6 months)
+        # Usuários por mês (últimos 6 meses)
         cursor.execute("""
             SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count
             FROM users 
@@ -1200,7 +1265,7 @@ def get_general_stats():
         }
         
     except Error as e:
-        print(f"Error getting statistics: {e}")
+        print(f"Erro ao obter estatísticas: {e}")
         return None
     finally:
         if connection.is_connected():
@@ -1208,7 +1273,7 @@ def get_general_stats():
             connection.close()
 
 def get_users_report_data():
-    """Gets data for users report"""
+    """Obtém dados para relatório de usuários"""
     connection = create_connection()
     if not connection:
         return None
@@ -1236,7 +1301,7 @@ def get_users_report_data():
         return cursor.fetchall()
         
     except Error as e:
-        print(f"Error getting users data: {e}")
+        print(f"Erro ao obter dados de usuários: {e}")
         return None
     finally:
         if connection.is_connected():
@@ -1244,7 +1309,7 @@ def get_users_report_data():
             connection.close()
 
 def get_flows_report_data():
-    """Gets data for flows report"""
+    """Obtém dados para relatório de fluxos"""
     connection = create_connection()
     if not connection:
         return None
@@ -1274,7 +1339,7 @@ def get_flows_report_data():
         return cursor.fetchall()
         
     except Error as e:
-        print(f"Error getting flows data: {e}")
+        print(f"Erro ao obter dados de fluxos: {e}")
         return None
     finally:
         if connection.is_connected():
@@ -1282,17 +1347,17 @@ def get_flows_report_data():
             connection.close()
 
 def create_edit_flow_keyboard(flows):
-    """Creates keyboard for flow selection to edit"""
+    """Cria teclado para seleção de fluxo para editar"""
     keyboard = []
     for flow in flows:
         keyboard.append([InlineKeyboardButton(f"✏️ {flow['name']}", callback_data=f"edit_flow_{flow['id']}")])
     
-    keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="admin_flows")])
+    keyboard.append([InlineKeyboardButton("🔙 Voltar", callback_data="admin_flows")])
     return InlineKeyboardMarkup(keyboard)
 
 def create_edit_step_keyboard(flow_id):
-    """Creates keyboard for editing flow steps"""
-    # Use FlowManager to get steps
+    """Cria teclado para edição de etapas de um fluxo"""
+    # Usar FlowManager para obter os steps
     flow_manager = FlowManager()
     steps = flow_manager.get_flow_steps(flow_id)
     keyboard = []
@@ -1301,12 +1366,12 @@ def create_edit_step_keyboard(flow_id):
         step_type = step['step_type'].replace('_', ' ').title()
         keyboard.append([InlineKeyboardButton(f"📝 {i}. {step_type}", callback_data=f"edit_step_{step['id']}")])
     
-    keyboard.append([InlineKeyboardButton("➕ Add Step", callback_data=f"add_step_{flow_id}")])
-    keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="edit_flow_list")])
+    keyboard.append([InlineKeyboardButton("➕ Adicionar Etapa", callback_data=f"add_step_{flow_id}")])
+    keyboard.append([InlineKeyboardButton("🔙 Voltar", callback_data="edit_flow_list")])
     return InlineKeyboardMarkup(keyboard)
 
 def get_step_details(step_id):
-    """Gets complete details of a step"""
+    """Obtém detalhes completos de uma etapa"""
     connection = create_connection()
     if not connection:
         return None
