@@ -1,0 +1,209 @@
+===============================================================================
+                    INSTRUÇÕES DE INSTALAÇÃO - BOT INFLUENCIADOR
+===============================================================================
+
+📋 PRÉ-REQUISITOS
+==================
+
+1. Python 3.10.12 ou superior
+2. MySQL 8.0 ou superior
+3. Conta no Telegram (para obter o token do bot)
+4. Conta no Railway (para deploy em produção)
+
+===============================================================================
+                    INSTALAÇÃO EM AMBIENTE LOCAL
+===============================================================================
+
+2. CRIAR AMBIENTE VIRTUAL
+--------------------------
+python -m venv venv
+
+# Windows:
+venv\Scripts\activate
+
+# Linux/Mac:
+source venv/bin/activate
+
+3. INSTALAR DEPENDÊNCIAS
+-------------------------
+pip install -r requirements.txt
+
+4. CONFIGURAR BANCO DE DADOS MYSQL
+-----------------------------------
+a) Instalar MySQL Server
+b) Criar banco de dados:
+   mysql -u root -p
+   CREATE DATABASE kpftdhra_bot_influenciador;
+   USE kpftdhra_bot_influenciador;
+   SOURCE BANCO_DE_DADOS.sql;
+
+5. CONFIGURAR VARIÁVEIS DE AMBIENTE
+------------------------------------
+Criar arquivo .env na raiz do projeto:
+
+# Configurações do Bot
+BOT_TOKEN=seu_token_aqui
+ADMIN_TELEGRAM_ID=seu_id_telegram_aqui
+
+# Configurações do Banco (Local)
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_DATABASE=kpftdhra_bot_influenciador
+MYSQL_USER=root
+MYSQL_PASSWORD=sua_senha_aqui
+
+6. EXECUTAR SCRIPTS DE CONFIGURAÇÃO
+-----------------------------------
+python create_flow_tables.py
+python add_admin.py
+
+7. TESTAR CONEXÃO COM BANCO
+----------------------------
+python check_database.py
+
+8. EXECUTAR O BOT
+------------------
+python bot.py
+
+===============================================================================
+                    DEPLOY NO RAILWAY
+===============================================================================
+
+1. PREPARAR O PROJETO
+----------------------
+a) Certifique-se de que todos os arquivos estão no repositório
+b) Verifique se o railway.json está configurado corretamente
+c) Confirme que o runtime.txt especifica Python 3.10.12
+
+2. CONFIGURAR NO RAILWAY
+-------------------------
+a) Acesse railway.app e faça login
+b) Clique em "New Project" > "Deploy from GitHub repo"
+c) Selecione seu repositório
+d) Configure as variáveis de ambiente:
+
+   BOT_TOKEN=seu_token_aqui
+   ADMIN_TELEGRAM_ID=seu_id_telegram_aqui
+   RAILWAY_ENVIRONMENT=production
+   MYSQL_HOST=railway_mysql_host
+   MYSQL_PORT=railway_mysql_port
+   MYSQL_DATABASE=railway_mysql_database
+   MYSQL_USER=railway_mysql_user
+   MYSQL_PASSWORD=railway_mysql_password
+
+3. CONFIGURAR BANCO MYSQL NO RAILWAY
+-------------------------------------
+a) No projeto Railway, vá em "Variables"
+b) Adicione um novo serviço MySQL
+c) Copie as variáveis de ambiente do MySQL fornecidas pelo Railway
+d) Execute o script de setup:
+
+   python setup_railway.py
+
+4. VERIFICAR DEPLOY
+-------------------
+a) Monitore os logs no Railway
+b) Teste o bot no Telegram
+c) Verifique se as tabelas foram criadas corretamente
+
+===============================================================================
+                    CONFIGURAÇÃO DO BOT TELEGRAM
+===============================================================================
+
+1. CRIAR BOT NO TELEGRAM
+-------------------------
+a) Abra o Telegram e procure por @BotFather
+b) Envie /newbot
+c) Escolha um nome para o bot
+d) Escolha um username (deve terminar em 'bot')
+e) Copie o token fornecido
+
+2. CONFIGURAR WEBHOOK (OPCIONAL)
+---------------------------------
+a) Para produção, configure webhook:
+   https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://seu-dominio.railway.app
+
+3. TESTAR O BOT
+----------------
+a) Procure pelo seu bot no Telegram
+b) Envie /start
+c) Verifique se responde corretamente
+
+===============================================================================
+                    ESTRUTURA DO PROJETO
+===============================================================================
+
+📁 ARQUIVOS PRINCIPAIS:
+- bot.py              # Arquivo principal do bot
+- database.py         # Configuração de conexão com banco
+- flow_manager.py     # Gerenciamento de fluxos
+- requirements.txt    # Dependências Python
+- railway.json        # Configuração Railway
+- runtime.txt         # Versão do Python
+- BANCO_DE_DADOS.sql  # Estrutura do banco
+
+📁 SCRIPTS AUXILIARES:
+- add_admin.py        # Adicionar administradores
+- check_database.py   # Verificar conexão com banco
+- check_flow.py       # Verificar fluxos
+- create_flow_tables.py # Criar tabelas de fluxo
+- setup_railway.py    # Configurar Railway
+
+===============================================================================
+                    COMANDOS ÚTEIS
+===============================================================================
+
+🔧 DESENVOLVIMENTO LOCAL:
+python bot.py                    # Executar bot
+python check_database.py         # Testar banco
+python add_admin.py             # Adicionar admin
+python create_flow_tables.py    # Criar tabelas
+
+🔧 PRODUÇÃO (RAILWAY):
+railway login                   # Login Railway
+railway up                      # Deploy
+railway logs                    # Ver logs
+railway variables               # Gerenciar variáveis
+
+===============================================================================
+                    TROUBLESHOOTING
+===============================================================================
+
+❌ PROBLEMAS COMUNS:
+
+1. Erro de conexão com MySQL:
+   - Verifique se o MySQL está rodando
+   - Confirme credenciais no database.py
+   - Teste com: python check_database.py
+
+2. Bot não responde:
+   - Verifique se o token está correto
+   - Confirme se o bot está ativo no Telegram
+   - Verifique logs: python bot.py
+
+3. Erro no Railway:
+   - Verifique variáveis de ambiente
+   - Confirme se o runtime.txt está correto
+   - Monitore logs no Railway Dashboard
+
+4. Tabelas não criadas:
+   - Execute: python create_flow_tables.py
+   - Verifique permissões do banco
+   - Confirme se o BANCO_DE_DADOS.sql foi executado
+
+===============================================================================
+                    SUPORTE
+===============================================================================
+
+📞 Para suporte técnico:
+- Verifique os logs de erro
+- Teste cada componente individualmente
+- Consulte a documentação do python-telegram-bot
+- Verifique a documentação do Railway
+
+🔗 LINKS ÚTEIS:
+- Python Telegram Bot: https://python-telegram-bot.readthedocs.io/
+- Railway Docs: https://docs.railway.app/
+- MySQL Docs: https://dev.mysql.com/doc/
+
+=============================================================================== 
